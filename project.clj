@@ -32,7 +32,9 @@
                  [ring/ring-core "1.6.3"]
                  [ring/ring-defaults "0.3.1"]
                  [secretary "1.2.3"]
-                 [selmer "1.11.7"]]
+                 [selmer "1.11.7"]
+                 [com.arangodb/arangodb-java-driver "4.3.4"]
+                 [org.clojure/data.json "0.2.6"]]
 
   :min-lein-version "2.0.0"
   
@@ -110,13 +112,11 @@
                       :pretty-print true
                       :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
                       :preloads [day8.re-frame-10x.preload]}}}}
-                  
-                  
-                  
                   :doo {:build "test"}
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
-                  :repl-options {:init-ns user}
+                  :repl-options {:init-ns user
+                                 :timeout 120000}
                   :injections [(require 'pjstadig.humane-test-output)
                                (pjstadig.humane-test-output/activate!)]}
    :project/test {:jvm-opts ["-server" "-Dconf=test-config.edn"]

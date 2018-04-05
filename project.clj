@@ -34,7 +34,8 @@
                  [secretary "1.2.3"]
                  [selmer "1.11.7"]
                  [com.arangodb/arangodb-java-driver "4.3.4"]
-                 [org.clojure/data.json "0.2.6"]]
+                 [org.clojure/data.json "0.2.6"]
+                 [org.clojure/tools.trace "0.7.9"]]
 
   :min-lein-version "2.0.0"
   
@@ -116,7 +117,7 @@
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
                   :repl-options {:init-ns user
-                                 :timeout 120000}
+                                 :timeout 500000}
                   :injections [(require 'pjstadig.humane-test-output)
                                (pjstadig.humane-test-output/activate!)]}
    :project/test {:jvm-opts ["-server" "-Dconf=test-config.edn"]

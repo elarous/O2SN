@@ -27,7 +27,7 @@
     (do-this thing)
     (do-other thing))"
   [db & body]
-  `(try (binding [*db* (.db *arango* (name db))]
+  `(try (binding [*db* (.db *arango* ~(name db))]
           ~@body)
         (catch ArangoDBException e#
           (println "Exception using db " ~db " : " (.getMessage e#)))))
@@ -66,18 +66,32 @@
            :args (sp/cat :graph-name keyword?
                            :body (sp/+ list?)))
 
-(defn- ednize
+(defn ednize
   "convert the given data from json to edn, and if the data is just a string return it untouched."
   [data]
-  (if (or (starts-with? (triml data) "{")
-          (starts-with? (triml data) "["))
+  (if (and (some? data)
+           (or (starts-with? (triml data) "{")
+               (starts-with? (triml data) "[")))
     (json/read-str data :key-fn keyword)
     data))
 
-(defn- jsonize
+(sp/fdef ednize
+         :args (sp/cat :data (sp/alt :str string?
+                                     :null nil?))
+         :ret (sp/or :m map?
+                     :v vector?
+                     :s string?
+                     ))
+
+(defn jsonize
   "convert the given data from edn to json."
   [data]
   (json/write-str data))
+
+(defn json-objs-join [coll]
+  (str "["
+       (string/join "," coll)
+       "]"))
 
 (defn- keys->names
   "convert the keys of the given map from keywords to strings."
@@ -138,6 +152,16 @@
 (sp/fdef drop-db!
          :args (sp/cat :db-name simple-keyword?))
 
+(defn db-exists?
+  "check whether the database with the given name exists. should be called after set-arango!."
+  [db]
+  (-> (.db *arango* (name db))
+      .exists))
+
+(sp/fdef db-exists?
+         :args (sp/cat :db-name simple-keyword?)
+         :ret boolean?)
+
 ;; collection functions
 (defn create-coll!
   "create a new collection with the given name. it should be called after set-db! or inside with-db."
@@ -168,6 +192,17 @@
 (sp/fdef truncate-coll!
          :args (sp/cat :coll-name simple-keyword?))
 
+(defn coll-exists?
+  "check if a collection exists using it's name. should be called after set-db! or inside with-db."
+  [coll]
+  (-> *db*
+      (.collection (name coll))
+      .exists))
+
+(sp/fdef coll-exists!
+         :args (sp/cat :coll simple-keyword?)
+         :ret boolean?)
+
 ;; document functions
 
 (defn get-doc
@@ -194,6 +229,16 @@
                        :doc simple-keyword?)
          :ret #(or (map? %)
                    (nil? %)))
+
+(defn doc-exists?
+  "check whether the doc exists or not using it's key. should be called inside with-coll"
+  [doc]
+  (-> *coll*
+      (.documentExists (name doc))))
+
+(sp/fdef doc-exists?
+         :args (sp/cat :doc-name simple-keyword?)
+         :ret boolean?)
 
 (defn insert-doc!
   "insert document into the surrounding collection. should be called inside with-coll."
@@ -236,6 +281,21 @@
                        :new-map map?))
 
 ;; multiple documents functions
+
+
+(defn get-docs
+  "get documents from the surrounding collection. should be called inside with-coll."
+  [ks]
+  (-> *coll*
+      (.getDocuments (map name ks) String)
+      .getDocuments
+      json-objs-join
+      ednize))
+
+(sp/fdef get-docs
+         :args (sp/cat :docs-keys (sp/coll-of simple-keyword?))
+         :ret (sp/coll-of map?))
+
 (defn insert-docs!
   "insert documents into the surrounding collection. should be called inside with-coll."
   [docs]
@@ -281,14 +341,14 @@
     (lazy-seq (cons (ednize (.next cur))
                     (create-seq cur)))))
 
-(defn query
+(defn query!
   "execute the given AQL query, it takes an optional bindings map. it should be called after set-db! or inside with-db.
   Exemple :
   (with-db :mydb
     (query \"for p in persons filter p.age >= @age return p\"
             {:age 20}))"
   ([query-str]
-   (query query-str nil))
+   (query! query-str nil))
   ([query-str bindings]
    (let [bind-vars (and bindings
                         (-> bindings
@@ -304,14 +364,24 @@
          :ret (sp/nilable (sp/coll-of map?)))
 
 ;; Graph Functions
+(defn graph-exists?
+  "check whether the graph with the given name exists or not. should be called after set-db! or inside with-db."
+  [graph]
+  (-> *db*
+      (.graph (name graph))
+      .exists))
+
+(sp/fdef graph-exists?
+         :args (sp/cat :graph-name simple-keyword?)
+         :ret boolean?)
 
 (defn- edge-def
   "create and EdgeDefinition object using the given map."
   [m]
   (-> (EdgeDefinition.)
-      (.collection (name (:collection m)))
-      (.from (into-array (map name (:from m))))
-      (.to (into-array (map name (:to m))))))
+      (.collection (name (:edge-coll m)))
+      (.from (into-array (map name (:edge-from m))))
+      (.to (into-array (map name (:edge-to m))))))
 
 (defn- create-graph-options
   "create the GraphCreateOptions object using the given map."
@@ -323,12 +393,17 @@
   "create a graph using the given map. it should be called after set-db! or inside with-db."
   [{:keys [graph-name graph-edges graph-options]}]
   (.createGraph *db*
-                graph-name
+                (name graph-name)
                 (map edge-def graph-edges)
                 (create-graph-options graph-options)))
 
+(sp/def ::edge-coll string?)
+(sp/def ::edge-from (sp/coll-of keyword?))
+(sp/def ::edge-to (sp/coll-of keyword?))
+
 (sp/def ::graph-name string?)
-(sp/def ::graph-edges (sp/coll-of simple-keyword?))
+(sp/def ::graph-edges (sp/coll-of
+                       (sp/keys :req-un [::edge-coll ::edge-from ::edge-to])))
 (sp/def ::graph-options map?)
 
 (sp/def ::create-graph-map
@@ -348,17 +423,12 @@
         :args (sp/cat :graph simple-keyword?))
 
 ;; vertex and vertex collection functions
+
 (defn- get-vcoll
   "get vertex collection by name. it should be called inside with-graph."
   [vcoll]
   (-> *graph*
       (.vertexCollection (name vcoll))))
-
-(defn drop-vcoll!
-  "drop vertex collection by name. it should be called inside with-graph."
-  [vcoll]
-  (-> (get-vcoll vcoll)
-      .drop))
 
 (defn insert-vertex!
   "insert vertex to the vertex collection. it should be called inside with-graph."
@@ -366,11 +436,19 @@
   (-> (get-vcoll vcoll)
       (.insertVertex (jsonize vertex))))
 
+(sp/fdef insert-vertex!
+         :args (sp/cat :vcoll simple-keyword?
+                       :vertex map?))
+
 (defn delete-vertex!
   "delete vertex by key from vertex collection. it should be called inside with-graph."
   [vcoll k]
   (-> (get-vcoll vcoll)
       (.deleteVertex (name k))))
+
+(sp/fdef delete-vertex!
+         :args (sp/cat :vcoll simple-keyword?
+                       :k simple-keyword?))
 
 (defn get-vertex
   "get vertex by key from vertex collection. it should be called inside with-graph."
@@ -379,17 +457,32 @@
       (.getVertex (name k) String)
       ednize))
 
+(sp/fdef get-vertex
+         :args (sp/cat :vcoll simple-keyword?
+                       :k simple-keyword?)
+         :ret map?)
+
 (defn replace-vertex!
   "replace vertex by key in the vertex collection. it should be called inside with-graph."
   [vcoll k vertex]
   (-> (get-vcoll vcoll)
       (.replaceVertex (name k) (jsonize vertex))))
 
+(sp/fdef replace-vertex!
+         :args (sp/cat :vcoll simple-keyword?
+                       :k simple-keyword?
+                       :vertex map?))
+
 (defn update-vertex!
   "update vertex by key in the vertex collection. it should be called inside with-graph."
   [vcoll k vertex]
   (-> (get-vcoll vcoll)
       (.updateVertex (name k) (jsonize vertex))))
+
+(sp/fdef update-vertex!
+         :args (sp/cat :vcoll simple-keyword?
+                       :k simple-keyword?
+                       :vertex map?))
 
 ;; edge and edge collection functions
 (defn- get-ecoll
@@ -404,11 +497,19 @@
   (-> (get-ecoll ecoll)
       (.insertEdge (jsonize edge))))
 
+(sp/fdef insert-edge!
+         :args (sp/cat :ecoll simple-keyword?
+                       :edge map?))
+
 (defn delete-edge!
   "delete edge by key from edge collection. it should be called inside with-graph."
   [ecoll k]
   (-> (get-ecoll ecoll)
       (.deleteEdge (name k))))
+
+(sp/fdef delete-edge!
+         :args (sp/cat :ecoll simple-keyword?
+                       :k simple-keyword?))
 
 (defn get-edge
   "get edge by key from edge collection. it should be called inside with-graph."
@@ -417,11 +518,21 @@
       (.getEdge (name k) String)
       ednize))
 
+(sp/fdef get-edge
+         :args (sp/cat :ecoll simple-keyword?
+                       :k simple-keyword?)
+         :ret map?)
+
 (defn replace-edge!
   "replace edge by key in edge collection. it should be called inside with-graph."
   [ecoll k edge]
   (-> (get-ecoll ecoll)
       (.replaceEdge (name k) (jsonize edge))))
+
+(sp/fdef replace-edge!
+         :args (sp/cat :ecoll simple-keyword?
+                       :k simple-keyword?
+                       :edge map?))
 
 (defn update-edge!
   "update edge by key in edge collection. it should be called inside with-graph."
@@ -429,154 +540,7 @@
   (-> (get-ecoll ecoll)
       (.updateEdge (name k) (jsonize edge))))
 
-(set-arango!)
-(set-db! :o2sn)
-
-;; testing
-
-;; (defn testing []
-;;   (with-db :o2sn
-;;     (truncate-coll! :players))
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (get-doc :2)))
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (insert-doc! {:_key "3" :name "youssef" :age 55})
-;;       (insert-doc! {:_key "4" :name "ahmed" :age 78})))
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (delete-doc! :1)))
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (get-doc :1)))
-
-;;   (with-db :o2sn
-;;     (get-doc :players :1))
-
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (update-doc! :3 {:age 17})
-;;       (replace-doc! :4 {:goals 15 :team "real madrid"})))
-
-;;   (let [v [{:_key "1" :name "nadal" :age 50}
-;;            {:_key "2" :name "katrina" :age 25}
-;;            {:_key "3" :name "sara" :age 44}
-;;            {:_key "4" :name "katrina" :age 13}
-;;            {:_key "5" :name "sara" :age 18}]]
-;;     (with-db :o2sn
-;;       (with-coll :players
-;;         (insert-docs! v))))
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (delete-docs! [:7 :8 :9])))
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (update-docs! [{:_key "7" :name "samiha"}
-;;                      {:_key "8" :name "samia"}])))
-
-;;   (with-db :o2sn
-;;     (with-coll :players
-;;       (replace-docs! [{:_key "9" :goals 15}
-;;                       {:_key "7" :team "fcb"}])))
-
-
-;;   (with-db :o2sn
-;;     (query "for p in players filter p.age >= @age return p.name"
-;;            {:age 40}))
-
-;;   (with-db :o2sn
-;;     (query "for p in players return {name : p.name, age : p.age}"))
-
-;;   (def ed (edge-def {:collection :coll1
-;;                      :from [:coll2 :coll3]
-;;                      :to [:coll4 :coll5]}))
-
-;;   (.getCollection ed)
-;;   (.getFrom ed)
-;;   (.getTo ed)
-
-
-;;   (def opts {:options {:orphan-colls [:coll6]}})
-
-;;   (def go (graph-options (:options opts)))
-;;   (.getOrphanCollections go)
-
-;;   (def m {:name "myGraph"
-;;           :edge-defs [{:collection :coll1
-;;                        :from [:coll2 :coll3]
-;;                        :to [:coll4 :coll5]}]
-;;           :options {:orphan-colls [:coll6]}})
-
-;;   (with-db :o2sn
-;;     (create-graph! m))
-
-;;   (with-db :o2sn
-;;     (delete-graph! "myGraph"))
-
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (insert-vertex! :coll2 {:_key "1" :name "soufiane" :age 51})
-;;       ))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (delete-vertex! :coll2 :613251)))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (drop-vcoll! :coll3)))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (get-vertex :coll2 :1)))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (replace-vertex! :coll2 :615055
-;;                        {:title "le rouge et le noir" :author "stendhal"})))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (update-vertex! :coll2 :1 {:age 20})))
-
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (update-edge! :coll1 :1 {:_from "coll2/1" :_to "coll4/3"})))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (replace-edge! :coll1 :1 {:_from "coll2/2" :_to "coll4/3"})))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (get-edge :coll1 :1)))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (insert-vertex! :coll2 {:_key "4" :name "Rabat"})
-;;       (insert-vertex! :coll4 {:_key "1" :name "Safi"})
-;;       (insert-edge! :coll1
-;;                     {:_key "1" :_from "coll2/4" :_to "coll4/1"})
-;;       ))
-
-;;   (with-db :o2sn
-;;     (with-graph :myGraph
-;;       (delete-edge! :coll1 :1)))
-
-
-;;   (with-db :o2sn
-;;     (truncate-coll! :coll2)
-;;     (truncate-coll! :coll4)
-;;     (truncate-coll! :coll1))
-
-;;   )
+(sp/fdef update-edge!
+         :args (sp/cat :ecoll simple-keyword?
+                       :k simple-keyword?
+                       :edge map?))

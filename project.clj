@@ -36,6 +36,7 @@
                  [com.arangodb/arangodb-java-driver "4.3.4"]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/tools.trace "0.7.9"]
+                 [org.clojure/tools.namespace "0.2.11"]
                  [org.clojure/test.check "0.10.0-alpha2"]]
 
   :min-lein-version "2.0.0"

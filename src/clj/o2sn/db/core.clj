@@ -12,13 +12,98 @@
             ArangoDatabase
             ArangoDB$Builder
             ArangoDBException]
-           [com.arangodb.entity EdgeDefinition]
-           [com.arangodb.model GraphCreateOptions]))
+           [com.arangodb.entity EdgeDefinition
+            DocumentCreateEntity
+            DocumentUpdateEntity]
+           [com.arangodb.model
+            GraphCreateOptions
+            DocumentCreateOptions
+            DocumentDeleteOptions
+            DocumentUpdateOptions
+            DocumentReplaceOptions
+            VertexCreateOptions
+            VertexUpdateOptions
+            VertexDeleteOptions
+            VertexReplaceOptions
+            DocumentReadOptions
+            EdgeCreateOptions
+            EdgeUpdateOptions
+            EdgeReplaceOptions
+            EdgeDeleteOptions]
+           [java.lang String]))
 
 (def ^:dynamic *arango* nil)
 (def ^:dynamic *db* nil)
 (def ^:dynamic *coll* nil)
 (def ^:dynamic *graph* nil)
+
+(sp/def ::opts-map (sp/map-of simple-keyword? any?))
+(sp/def ::out-ks (sp/coll-of simple-keyword?))
+(sp/def ::docs (sp/coll-of simple-keyword?))
+(sp/def ::errors (sp/coll-of simple-keyword?))
+(sp/def ::out-map (sp/keys :req-un [::docs ::errors]))
+
+
+(defn- kebab->camel
+  "transform a kebab case keyword to a camel case string."
+  [k]
+  (string/replace (name k) #"-(\w)" #(string/upper-case (last %))))
+
+(defn- keyword->getter
+  "transform a keyword to a java getter (with case transformation)."
+  [k]
+  (kebab->camel (keyword (str "get-" (name k)))))
+
+(defn- resolve-method
+  "resolve a java method given a class instance, it's name and args."
+  [instance method-name args]
+  (try (->  instance
+            .getClass
+            (.getMethod method-name args))
+       (catch NoSuchMethodException e
+         (println "No method found " method-name
+                  "with args " args
+                  "for instance " instance))))
+
+
+(defn- instance-get
+  "invoke the getter indicated by the keyword k (after case transformation) on the given java class instance."
+  [instance k]
+  (let [getter-name (keyword->getter k)
+        getter (resolve-method instance getter-name (make-array java.lang.Class 0))]
+    (when getter
+      (.invoke getter instance nil))))
+
+(defn- set-opt
+  "invoke the function indicated by the keyword k with one argument v on the given java class instance."
+  [instance [k v]]
+  (let [method-name (kebab->camel k)
+        method (resolve-method instance method-name (into-array [(type v)]))]
+    (when method
+      (.invoke method instance (into-array [v])))))
+
+(defn map->opts
+  "invoke methods of the given instance, the map m contains pairs of the method name as keyword (in kebab case) and the argument of that method as value. this currently works with methods with one argument only. (maybe this will be modified later)."
+  [instance m]
+  (when (and (some? instance) (some? m))
+    (loop [result instance
+           opts-pairs (seq m)]
+      (if (or (empty? opts-pairs) (nil? result))
+        result
+        (recur (set-opt result (first opts-pairs))
+               (rest opts-pairs))))))
+
+(defn entity->map
+  "retrieves data from the given instance as a map, ks is a sequence of keys that resulting map will contain, each key is mapped to a java getter method, for exemple the key :user-infos is mapped to getUserInfos."
+  [instance ks]
+  (when (and (some? instance) (some? ks))
+    (loop [result (hash-map)
+           left-ks ks]
+      (if (empty? left-ks)
+        result
+        (recur (assoc result (first left-ks)
+                      (instance-get instance (first left-ks)))
+               (rest left-ks))))))
 
 (defmacro with-db
   "use the given database as the target database for the contained database operations.
@@ -26,8 +111,7 @@
   (with-db :mydb
     (do-this thing)
     (do-other thing))"
-  [db & body]
-  `(try (binding [*db* (.db *arango* ~(name db))]
+  [db & body] `(try (binding [*db* (.db *arango* ~(name db))]
           ~@body)
         (catch ArangoDBException e#
           (println "Exception using db " ~db " : " (.getMessage e#)))))
@@ -80,8 +164,7 @@
                                      :null nil?))
          :ret (sp/or :m map?
                      :v vector?
-                     :s string?
-                     ))
+                     :s string?))
 
 (defn jsonize
   "convert the given data from edn to json."
@@ -112,14 +195,18 @@
                       (->> % :ret vals set))))
 
 (defn set-arango!
-  "set the arangodb instance to use, if no value given the needed configuration to create a new instance are loaded from the arangodb.properties file that should reside in the class path."
+  "set the arangodb instance to use, if no configuration map is  given the needed configuration is loaded from the arangodb.properties file that should be in the class path."
   ([]
-   (set-arango! (.build (ArangoDB$Builder.))))
-  ([new-val]
-   (alter-var-root #'*arango* (fn [_] new-val))))
+   (alter-var-root #'*arango* (fn [_] (.build (ArangoDB$Builder.)))))
+  ([{:keys [host port user password]}]
+   (alter-var-root #'*arango* (fn [_] (-> (ArangoDB$Builder.)
+                                          (.host host port)
+                                          (.user user)
+                                          (.password password)
+                                          .build)))))
 
 (sp/fdef set-arango!
-         :args (sp/cat :arango (sp/? #(instance? ArangoDB %)))
+         :args (sp/cat :opts-map (sp/? map?))
          :ret #(instance? ArangoDB %))
 
 (defn set-db!
@@ -215,18 +302,24 @@
   (with-db :mydb
    (get-doc :mycoll :mykey))"
   ([doc-key]
+   (get-doc doc-key nil))
+  ([doc-key opts-map]
    (-> *coll*
-       (.getDocument (name doc-key) String)
+       (.getDocument (name doc-key)
+                     String
+                     (map->opts (DocumentReadOptions.) opts-map))
        ednize))
-  ([doc-coll doc-key]
+  ([doc-coll doc-key opts-map]
    (-> *db*
        (.getDocument (str (name doc-coll) "/" (name doc-key))
-                     String)
+                     String
+                     (map->opts (DocumentReadOptions.) opts-map))
        ednize)))
 
 (sp/fdef get-doc
          :args (sp/cat :coll (sp/? simple-keyword?)
-                       :doc simple-keyword?)
+                       :doc simple-keyword?
+                       :opts-map (sp/? ::opts-map))
          :ret #(or (map? %)
                    (nil? %)))
 
@@ -241,47 +334,87 @@
          :ret boolean?)
 
 (defn insert-doc!
-  "insert document into the surrounding collection. should be called inside with-coll."
-  [doc-map]
-  (-> *coll*
-      (.insertDocument (jsonize doc-map))))
+  "insert document into the surrounding collection and return it. should be called inside with-coll."
+  ([doc-map]
+   (insert-doc! doc-map nil nil))
+  ([doc-map opts-map]
+   (insert-doc! doc-map opts-map nil))
+  ([doc-map opts-map out-ks]
+   (-> *coll*
+       (.insertDocument (jsonize doc-map)
+                        (map->opts (DocumentCreateOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef insert-doc!
-         :args (sp/cat :doc-map map?))
+         :args (sp/cat :doc-map map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn delete-doc!
   "delete document by it's key from the surrounding collection. should be called inside with-coll."
-  [doc-key]
-  (-> *coll*
-      (.deleteDocument (name doc-key))))
+  ([doc-key]
+   (delete-doc! doc-key nil nil))
+  ([doc-key opts-map]
+   (delete-doc! doc-key opts-map nil))
+  ([doc-key opts-map out-ks]
+   (-> *coll*
+       (.deleteDocument (name doc-key)
+                        String
+                        (map->opts (DocumentDeleteOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef delete-doc!
-         :args (sp/cat :doc-key simple-keyword?))
+         :args (sp/cat :doc-key simple-keyword?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn update-doc!
   "update document by it's key inside the surrounding collection. should be called inside with-coll."
-  [doc-key updated-map]
-  (-> *coll*
-      (.updateDocument (name doc-key)
-                       (jsonize updated-map))))
+  ([doc-key updated-map]
+   (update-doc! doc-key updated-map nil nil))
+  ([doc-key updated-map opts-map]
+   (update-doc! doc-key updated-map opts-map nil))
+  ([doc-key updated-map opts-map out-ks]
+   (-> *coll*
+       (.updateDocument (name doc-key)
+                        (jsonize updated-map)
+                        (map->opts (DocumentUpdateOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef update-doc!
          :args (sp/cat :doc-key simple-keyword?
-                       :updated-map map?))
+                       :updated-map map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn replace-doc!
-  "replace document by it's key inside the surrounding collection. should be called inside with.coll."
-  [doc-key new-map]
-  (-> *coll*
-      (.replaceDocument (name doc-key)
-                        (jsonize new-map))))
+  "replace document by it's key inside the surrounding collection. should be called inside with-coll."
+  ([doc-key new-map]
+   (replace-doc! doc-key new-map nil nil))
+  ([doc-key new-map opts-map]
+   (replace-doc! doc-key new-map opts-map nil))
+  ([doc-key new-map opts-map out-ks]
+   (-> *coll*
+       (.replaceDocument (name doc-key)
+                         (jsonize new-map)
+                         (map->opts (DocumentReplaceOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef replace-doc!
          :args (sp/cat :doc-key simple-keyword?
-                       :new-map map?))
+                       :new-map map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 ;; multiple documents functions
-
+(defn- multi-results [multi-ents docs errors]
+  (when (and (some? docs) (some? errors))
+    (hash-map :docs (map #(entity->map % docs) (.getDocuments multi-ents))
+              :errors (map #(entity->map % errors) (.getErrors multi-ents)))))
 
 (defn get-docs
   "get documents from the surrounding collection. should be called inside with-coll."
@@ -298,44 +431,82 @@
 
 (defn insert-docs!
   "insert documents into the surrounding collection. should be called inside with-coll."
-  [docs]
-  (-> *coll*
-      (.insertDocuments (map jsonize docs))))
+  ([documents]
+   (insert-docs! documents nil nil))
+  ([documents opts-map]
+   (insert-doc! documents opts-map nil))
+  ([documents opts-map {:keys [docs errors]}]
+   (-> *coll*
+       (.insertDocuments (map jsonize documents)
+                         (map->opts (DocumentCreateOptions.) opts-map))
+       (multi-results docs errors))))
 
 (sp/fdef insert-docs!
-         :args (sp/cat :docs (sp/coll-of map?)))
+         :args (sp/cat :documents (sp/coll-of map?)
+                       :opts-map (sp/? ::opts-map)
+                       :out-map (sp/? ::out-map))
+         :ret map?)
 
 (defn delete-docs!
   "delete documents by their keys from the surrounding collection. should be called inside with-coll."
-  [docs-keys]
-  (-> *coll*
-      (.deleteDocuments (map name docs-keys))))
+  ([docs-keys]
+   (delete-docs! docs-keys nil nil))
+  ([docs-keys opts-map]
+   (delete-docs! docs-keys opts-map nil))
+  ([docs-keys opts-map {:keys [docs errors]}]
+   (-> *coll*
+       (.deleteDocuments (map name docs-keys)
+                         String
+                         (map->opts (DocumentDeleteOptions.) opts-map))
+       (multi-results docs errors))))
 
 (sp/fdef delete-docs!
-         :args (sp/cat :docs-keys (sp/coll-of simple-keyword?)))
+         :args (sp/cat :docs-keys (sp/coll-of simple-keyword?)
+                       :opts-map (sp/? ::opts-map)
+                       :out-map (sp/? ::out-map))
+         :ret map?)
 
 (defn update-docs!
   "update documents by their keys in the surrounding collection. should be called inside with-coll."
-  [docs]
-  (-> *coll*
-      (.updateDocuments (map jsonize docs))))
+  ([documents]
+   (update-docs! documents nil nil))
+  ([documents opts-map]
+   (update-docs! opts-map nil))
+  ([documents opts-map {:keys [docs errors]}]
+   (-> *coll*
+       (.updateDocuments (map jsonize documents)
+                         (map->opts (DocumentUpdateOptions.) opts-map))
+       (multi-results docs errors))))
+
 
 (sp/fdef update-docs!
-         :args (sp/cat :docs (sp/coll-of map?)))
+         :args (sp/cat :documents (sp/coll-of map?)
+                       :opts-map (sp/? ::opts-map)
+                       :out-map (sp/? ::out-map))
+         :ret map?)
 
 (defn replace-docs!
   "replace documents by their keys in the surrounding "
-  [docs]
-  (-> *coll*
-      (.replaceDocuments (map jsonize docs))))
+  ([documents]
+   (replace-docs! documents nil nil))
+  ([documents opts-map]
+   (replace-docs! documents opts-map nil))
+  ([documents opts-map {:keys [docs errors]}]
+   (-> *coll*
+       (.replaceDocuments (map jsonize documents)
+                          (map->opts (DocumentReplaceOptions.) opts-map))
+       (multi-results docs errors))))
 
 (sp/fdef replace-docs!
-         :args (sp/cat :docs (sp/coll-of map?)))
+         :args (sp/cat :docs (sp/coll-of map?)
+                       :opts-map (sp/? ::opts-map)
+                       :out-map (sp/? ::out-map))
+         :ret map?)
 
 ;; general aql
 
 (defn- create-seq
-  "a helper function with creates a lazy sequence from the cursor after executing a query."
+  "a helper function which creates a lazy sequence from the cursor after executing a query."
   [cur]
   (when (.hasNext cur)
     (lazy-seq (cons (ednize (.next cur))
@@ -378,16 +549,9 @@
 (defn- edge-def
   "create and EdgeDefinition object using the given map."
   [m]
-  (-> (EdgeDefinition.)
-      (.collection (name (:edge-coll m)))
-      (.from (into-array (map name (:edge-from m))))
-      (.to (into-array (map name (:edge-to m))))))
-
-(defn- create-graph-options
-  "create the GraphCreateOptions object using the given map."
-  [m]
-  (-> (GraphCreateOptions.)
-      (.orphanCollections (into-array (map name (:orphan-colls m))))))
+  (map->opts (EdgeDefinition.) {:collection (name (:edge-coll m))
+                                :from (into-array (map name (:edge-from m)))
+                                :to (into-array (map name (:edge-to m)))}))
 
 (defn create-graph!
   "create a graph using the given map. it should be called after set-db! or inside with-db."
@@ -395,7 +559,7 @@
   (.createGraph *db*
                 (name graph-name)
                 (map edge-def graph-edges)
-                (create-graph-options graph-options)))
+                (map->opts (GraphCreateOptions.) graph-options)))
 
 (sp/def ::edge-coll string?)
 (sp/def ::edge-from (sp/coll-of keyword?))
@@ -432,57 +596,99 @@
 
 (defn insert-vertex!
   "insert vertex to the vertex collection. it should be called inside with-graph."
-  [vcoll vertex]
-  (-> (get-vcoll vcoll)
-      (.insertVertex (jsonize vertex))))
+  ([vcoll vertex]
+   (insert-vertex! vcoll vertex nil nil))
+  ([vcoll vertex opts-map]
+   (insert-vertex! vcoll vertex opts-map nil))
+  ([vcoll vertex opts-map out-ks]
+   (-> (get-vcoll vcoll)
+       (.insertVertex (jsonize vertex)
+                      (map->opts (VertexCreateOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef insert-vertex!
          :args (sp/cat :vcoll simple-keyword?
-                       :vertex map?))
+                       :vertex map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn delete-vertex!
   "delete vertex by key from vertex collection. it should be called inside with-graph."
-  [vcoll k]
-  (-> (get-vcoll vcoll)
-      (.deleteVertex (name k))))
+  ([vcoll k]
+   (delete-vertex! vcoll k nil nil))
+  ([vcoll k opts-map]
+   (delete-vertex! vcoll k opts-map nil))
+  ([vcoll k opts-map out-ks]
+   (-> (get-vcoll vcoll)
+       (.deleteVertex (name k)
+                      (map->opts (VertexDeleteOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef delete-vertex!
          :args (sp/cat :vcoll simple-keyword?
-                       :k simple-keyword?))
+                       :k simple-keyword?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn get-vertex
   "get vertex by key from vertex collection. it should be called inside with-graph."
-  [vcoll k]
-  (-> (get-vcoll vcoll)
-      (.getVertex (name k) String)
-      ednize))
+  ([vcoll k]
+   (get-vertex vcoll k nil))
+  ([vcoll k opts-map]
+   (-> (get-vcoll vcoll)
+       (.getVertex (name k)
+                   String
+                   (map->opts (DocumentReadOptions.) opts-map))
+       ednize)))
 
 (sp/fdef get-vertex
          :args (sp/cat :vcoll simple-keyword?
-                       :k simple-keyword?)
+                       :k simple-keyword?
+                       :opts-map (sp/? ::opts-map))
          :ret map?)
 
 (defn replace-vertex!
   "replace vertex by key in the vertex collection. it should be called inside with-graph."
-  [vcoll k vertex]
-  (-> (get-vcoll vcoll)
-      (.replaceVertex (name k) (jsonize vertex))))
+  ([vcoll k vertex]
+   (replace-vertex! vcoll k vertex nil nil))
+  ([vcoll k vertex opts-map]
+   (replace-vertex! vcoll k vertex opts-map nil))
+  ([vcoll k vertex opts-map out-ks]
+   (-> (get-vcoll vcoll)
+       (.replaceVertex (name k)
+                       (jsonize vertex)
+                       (map->opts (VertexReplaceOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef replace-vertex!
          :args (sp/cat :vcoll simple-keyword?
                        :k simple-keyword?
-                       :vertex map?))
+                       :vertex map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn update-vertex!
   "update vertex by key in the vertex collection. it should be called inside with-graph."
-  [vcoll k vertex]
-  (-> (get-vcoll vcoll)
-      (.updateVertex (name k) (jsonize vertex))))
+  ([vcoll k vertex]
+   (update-vertex! vcoll k vertex nil nil))
+  ([vcoll k vertex opts-map]
+   (update-vertex! vcoll k vertex opts-map nil))
+  ([vcoll k vertex opts-map out-ks]
+   (-> (get-vcoll vcoll)
+       (.updateVertex (name k)
+                      (jsonize vertex)
+                      (map->opts (VertexUpdateOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef update-vertex!
          :args (sp/cat :vcoll simple-keyword?
                        :k simple-keyword?
-                       :vertex map?))
+                       :vertex map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks)))
 
 ;; edge and edge collection functions
 (defn- get-ecoll
@@ -493,54 +699,97 @@
 
 (defn insert-edge!
   "insert edge to edge collection. it should be called inside with-graph."
-  [ecoll edge]
-  (-> (get-ecoll ecoll)
-      (.insertEdge (jsonize edge))))
+  ([ecoll edge]
+   (insert-edge! ecoll edge nil nil))
+  ([ecoll edge opts-map]
+   (insert-edge! ecoll edge opts-map nil))
+  ([ecoll edge opts-map out-ks]
+   (-> (get-ecoll ecoll)
+       (.insertEdge (jsonize edge)
+                    (map->opts (EdgeCreateOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef insert-edge!
          :args (sp/cat :ecoll simple-keyword?
-                       :edge map?))
+                       :edge map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn delete-edge!
   "delete edge by key from edge collection. it should be called inside with-graph."
-  [ecoll k]
-  (-> (get-ecoll ecoll)
-      (.deleteEdge (name k))))
+  ([ecoll k]
+   (delete-edge! ecoll k nil nil))
+  ([ecoll k opts-map]
+   (delete-edge! ecoll k opts-map nil))
+  ([ecoll k opts-map out-ks]
+   (-> (get-ecoll ecoll)
+       (.deleteEdge (name k)
+                    (map->opts (EdgeDeleteOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef delete-edge!
          :args (sp/cat :ecoll simple-keyword?
-                       :k simple-keyword?))
+                       :k simple-keyword?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ka (sp/? ::out-ks))
+         :ret map?)
 
 (defn get-edge
   "get edge by key from edge collection. it should be called inside with-graph."
-  [ecoll k]
-  (-> (get-ecoll ecoll)
-      (.getEdge (name k) String)
-      ednize))
+  ([ecoll k]
+   (get-edge ecoll k nil))
+  ([ecoll k opts-map]
+   (-> (get-ecoll ecoll)
+       (.getEdge (name k)
+                 String
+                 (map->opts (DocumentReadOptions.) opts-map))
+       ednize)))
 
 (sp/fdef get-edge
          :args (sp/cat :ecoll simple-keyword?
-                       :k simple-keyword?)
+                       :k simple-keyword?
+                       :opts-map (sp/? ::opts-map))
          :ret map?)
 
 (defn replace-edge!
   "replace edge by key in edge collection. it should be called inside with-graph."
-  [ecoll k edge]
-  (-> (get-ecoll ecoll)
-      (.replaceEdge (name k) (jsonize edge))))
+  ([ecoll k edge]
+   (replace-edge! ecoll k edge nil nil))
+  ([ecoll k edge opts-map]
+   (replace-edge! ecoll k edge opts-map nil))
+  ([ecoll k edge opts-map out-ks]
+   (-> (get-ecoll ecoll)
+       (.replaceEdge (name k)
+                     (jsonize edge)
+                     (map->opts (EdgeReplaceOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef replace-edge!
          :args (sp/cat :ecoll simple-keyword?
                        :k simple-keyword?
-                       :edge map?))
+                       :edge map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)
 
 (defn update-edge!
   "update edge by key in edge collection. it should be called inside with-graph."
-  [ecoll k edge]
-  (-> (get-ecoll ecoll)
-      (.updateEdge (name k) (jsonize edge))))
+  ([ecoll k edge]
+   (update-edge! ecoll k edge nil nil))
+  ([ecoll k edge opts-map]
+   (update-edge! ecoll k edge opts-map nil))
+  ([ecoll k edge opts-map out-ks]
+   (-> (get-ecoll ecoll)
+       (.updateEdge (name k)
+                    (jsonize edge)
+                    (map->opts (EdgeUpdateOptions.) opts-map))
+       (entity->map out-ks))))
 
 (sp/fdef update-edge!
          :args (sp/cat :ecoll simple-keyword?
                        :k simple-keyword?
-                       :edge map?))
+                       :edge map?
+                       :opts-map (sp/? ::opts-map)
+                       :out-ks (sp/? ::out-ks))
+         :ret map?)

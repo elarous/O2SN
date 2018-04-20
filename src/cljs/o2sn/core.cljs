@@ -33,7 +33,7 @@
   [:div.container
    [:div.row
     [:div.col-md-12
-     [:img {:src (str js/context "/img/warning_clojure.png")}]]]])
+     [:img {:src "/img/warning_clojure.png"}]]]])
 
 (defn home-page []
   [:div.container

@@ -25,8 +25,13 @@
                  [org.clojure/tools.cli "0.3.6"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.webjars.bower/tether "1.4.3"]
-                 [org.webjars/bootstrap "4.0.0-2"]
-                 [org.webjars/font-awesome "5.0.9"]
+                 ;;[org.webjars/bootstrap "4.0.0-2"]
+                 ;;[org.webjars.bower/bootstrap-material-design "4.1.1"]
+                 ;;[org.webjars/bootstrap-material-design "4.1.1"]
+                 ;;[org.webjars.npm/popper.js "1.14.3"]
+                 ;;[org.webjars/font-awesome "5.0.9"]
+                 ;;[org.webjars/jquery "3.3.1-1"]
+                 [cljsjs/semantic-ui-react "0.79.1-0"]
                  [re-frame "0.10.5"]
                  [reagent "0.7.0"]
                  [ring-webjars "0.2.0"]
@@ -38,7 +43,8 @@
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/tools.trace "0.7.9"]
                  [org.clojure/tools.namespace "0.2.11"]
-                 [org.clojure/test.check "0.10.0-alpha2"]]
+                 [org.clojure/test.check "0.10.0-alpha2"]
+                 [day8.re-frame/http-fx "0.1.6"]]
 
   :min-lein-version "2.0.0"
   

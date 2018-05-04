@@ -3,8 +3,9 @@
             [compojure.api.sweet :refer :all]
             [schema.core :as s]
             [compojure.api.meta :refer [restructure-param]]
-            [buddy.auth.accessrules :refer [restrict]]
-            [buddy.auth :refer [authenticated?]]))
+            [buddy.auth.accessrules :refer [restrict success error]]
+            [buddy.auth :refer [authenticated?]]
+            [o2sn.services.users :as users]))
 
 (defn access-error [_ _]
   (unauthorized {:error "unauthorized"}))
@@ -27,40 +28,25 @@
              :data {:info {:version "1.0.0"
                            :title "Sample API"
                            :description "Sample Services"}}}}
-  
   (GET "/authenticated" []
-       :auth-rules authenticated?
-       :current-user user
-       (ok {:user user}))
-  (context "/api" []
-    :tags ["thingie"]
+    :auth-rules authenticated?
+    :current-user user
+    (ok {:user user}))
+ (context "/api" []
+   :tags ["thingie"]
 
-    (GET "/plus" []
-      :return       Long
-      :query-params [x :- Long, {y :- Long 1}]
-      :summary      "x+y with query-parameters. y defaults to 1."
-      (ok (+ x y)))
+    (POST "/login" req
+      :auth-rules users/not-authenticated?
+      :body-params [username :- String, password :- String]
+      :summary "login the user"
+      (users/login username password req))
 
-    (POST "/minus" []
-      :return      Long
-      :body-params [x :- Long, y :- Long]
-      :summary     "x-y with body-parameters."
-      (ok (- x y)))
+    (POST "/logout" req
+      :auth-rules authenticated?
+      :summary "logout the current user."
+      (users/logout req))
 
-    (GET "/times/:x/:y" []
-      :return      Long
-      :path-params [x :- Long, y :- Long]
-      :summary     "x*y with path-parameters"
-      (ok (* x y)))
-
-    (POST "/divide" []
-      :return      Double
-      :form-params [x :- Long, y :- Long]
-      :summary     "x/y with form-parameters"
-      (ok (/ x y)))
-
-    (GET "/power" []
-      :return      Long
-      :header-params [x :- Long, y :- Long]
-      :summary     "x^y with header-parameters"
-      (ok (long (Math/pow x y))))))
+    (GET "/admin" []
+      :auth-rules users/admin?
+      :summary "the admin page"
+      (ok "Admin Data"))))

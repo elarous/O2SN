@@ -1,7 +1,9 @@
 /* so that the form container take the full height */
+body,
 body > div,
 body > div > div,
-body > div > div > div.login-form,
-body > div > div > div.signup-form {
+body > div > div > div,
+body > div > div > div > div.login-form,
+body > div > div > div > div.signup-form {
     height: 100%;
 }

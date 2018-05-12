@@ -32,6 +32,8 @@
                  ;;[org.webjars/font-awesome "5.0.9"]
                  ;;[org.webjars/jquery "3.3.1-1"]
                  [cljsjs/semantic-ui-react "0.79.1-0"]
+                 [cljsjs/react-transition-group "2.3.0-0"]
+                 [cljsjs/react-motion "0.5.0-0"]
                  [re-frame "0.10.5"]
                  [reagent "0.7.0"]
                  [ring-webjars "0.2.0"]

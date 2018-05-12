@@ -40,6 +40,22 @@
      (-> (db/query! q-str {:username username :password password})
          first))))
 
+(defn username-exists? [username]
+  (let [q-str "for u in users
+               filter u.username == @username
+               return u != null"]
+    (-> (db/query! q-str {:username username})
+        first
+        boolean)))
+
+(defn email-exists? [email]
+  (let [q-str "for u in users
+               filter u.email == @email
+               return u != null"]
+    (-> (db/query! q-str {:email email})
+        first
+        boolean)))
+
 (defn delete-user! [user]
   (if-let [k (cond (map? user) (:_key user)
                    (keyword? user) user)]

@@ -32,8 +32,32 @@
     :auth-rules authenticated?
     :current-user user
     (ok {:user user}))
- (context "/api" []
-   :tags ["thingie"]
+  (context "/api" []
+    :tags ["thingie"]
+
+    (GET "/user/exists/:username" []
+      :auth-rules users/not-authenticated?
+      :path-params [username :- String]
+      :return Boolean
+      :summary "check whether a user with the given username exists"
+      (users/username-exists? username))
+
+    (GET "/user/email/exists/:email" []
+      :auth-rules users/not-authenticated?
+      :path-params [email :- String]
+      :return Boolean
+      :summary "check whether an email with the given username exists"
+      (users/email-exists? email))
+
+    (POST "/user/signup" []
+      :auth-rules users/not-authenticated?
+      :body-params [email :- String
+                    username :- String
+                    password :- String]
+      :summary "sign up a new user"
+      (users/signup-user (hash-map :email email
+                                   :username username
+                                   :password password)))
 
     (POST "/login" req
       :auth-rules users/not-authenticated?

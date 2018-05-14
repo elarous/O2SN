@@ -79,7 +79,7 @@
  :login
  (fn [{db :db} [_ username password]]
    {:http-xhrio {:method :post
-                 :uri "/api/login"
+                 :uri "/user/login"
                  :params {:username username :password password}
                  :format (ajax/json-request-format)
                  :response-format (ajax/text-response-format)
@@ -105,7 +105,7 @@
  :logout
  (fn [{db :db} [_]]
    {:http-xhrio {:method :post
-                 :uri "/api/logout"
+                 :uri "/user/logout"
                  :format (ajax/text-request-format)
                  :response-format (ajax/text-response-format)
                  :on-success [:logged-out true]
@@ -278,7 +278,7 @@
                         :username (get-in db [:signup-form :username :value])
                         :password (get-in db [:signup-form :password :value]))]
      {:db (assoc-in db [:signup-form :processing?] true)
-      :http-xhrio {:uri "/api/user/signup"
+      :http-xhrio {:uri "/user/signup"
                    :method :post
                    :params data
                    :format (ajax/json-request-format)

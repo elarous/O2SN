@@ -32,24 +32,23 @@
     :auth-rules authenticated?
     :current-user user
     (ok {:user user}))
-  (context "/api" []
-    :tags ["thingie"]
 
-    (GET "/user/exists/:username" []
+  (context "/user" []
+    (GET "/exists/:username" []
       :auth-rules users/not-authenticated?
       :path-params [username :- String]
       :return Boolean
       :summary "check whether a user with the given username exists"
       (users/username-exists? username))
 
-    (GET "/user/email/exists/:email" []
+    (GET "/email/exists/:email" []
       :auth-rules users/not-authenticated?
       :path-params [email :- String]
       :return Boolean
       :summary "check whether an email with the given username exists"
       (users/email-exists? email))
 
-    (POST "/user/signup" []
+    (POST "/signup" []
       :auth-rules users/not-authenticated?
       :body-params [email :- String
                     username :- String
@@ -58,6 +57,12 @@
       (users/signup-user (hash-map :email email
                                    :username username
                                    :password password)))
+
+    (GET "/confirm/:hash-str" []
+      :auth-rules users/not-authenticated?
+      :path-params [hash-str :- String]
+      :summary "confirm an account"
+      (users/confirm-accnt hash-str))
 
     (POST "/login" req
       :auth-rules users/not-authenticated?
@@ -68,9 +73,11 @@
     (POST "/logout" req
       :auth-rules authenticated?
       :summary "logout the current user."
-      (users/logout req))
+      (users/logout req)))
 
-    (GET "/admin" []
+  (context "/api" []
+    :tags ["thingie"]
+        (GET "/admin" []
       :auth-rules users/admin?
       :summary "the admin page"
       (ok "Admin Data"))))

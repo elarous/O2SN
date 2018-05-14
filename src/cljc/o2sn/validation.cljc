@@ -84,7 +84,7 @@
     (failure-fn {:email "email is empty"})
     (let [err-ret {:email "email already exists"}]
       (ajax-request
-       {:uri (str "/api/user/email/exists/" email)
+       {:uri (str "/user/email/exists/" email)
         :method :get
         :format (ajax/text-request-format)
         :response-format (ajax/json-response-format {:keywords? true})
@@ -105,7 +105,7 @@
     (failure-fn {:username "username is empty"})
     (let [err-ret {:username "username already exists"}]
       (ajax-request
-       {:uri (str "/api/user/exists/" username)
+       {:uri (str "/user/exists/" username)
         :method :get
         :format (ajax/text-request-format)
         :response-format (ajax/json-response-format {:keywords? true})

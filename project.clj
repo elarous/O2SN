@@ -46,7 +46,8 @@
                  [org.clojure/tools.trace "0.7.9"]
                  [org.clojure/tools.namespace "0.2.11"]
                  [org.clojure/test.check "0.10.0-alpha2"]
-                 [day8.re-frame/http-fx "0.1.6"]]
+                 [day8.re-frame/http-fx "0.1.6"]
+                 [com.draines/postal "2.0.2"]]
 
   :min-lein-version "2.0.0"
   
@@ -84,8 +85,6 @@
                  :closure-warnings
                  {:externs-validation :off :non-standard-jsdoc :off}
                  :externs ["react/externs/react.js"]}}}}
-             
-             
              :aot :all
              :uberjar-name "o2sn.jar"
              :source-paths ["env/prod/clj"]

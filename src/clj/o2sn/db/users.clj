@@ -22,7 +22,7 @@
 (defn create-user! [user]
   (db/with-coll :users
     (-> (db/insert-doc!
-         (select-keys user [:email :username :password])
+         user
          {:return-new true}
          [:new])
         :new
@@ -67,3 +67,11 @@
                    (keyword? user) user)]
     (db/with-coll :users
       (db/update-doc! k new-val))))
+
+(defn activate-accnt! [hash]
+  (let [q-str "for u in users
+               filter u.hash == @hash
+               update u with {activated : true} in users
+               return NEW"]
+    (-> (db/query! q-str {:hash hash})
+        first)))

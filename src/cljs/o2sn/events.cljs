@@ -8,7 +8,8 @@
                                    debug]]
             [day8.re-frame.http-fx]
             [ajax.core :as ajax]
-            [o2sn.validation :as v]))
+            [o2sn.validation :as v]
+            ))
 
 ;;effect handlers
 (reg-fx
@@ -547,3 +548,4 @@
  :form-control-activated?
  (fn [db [_ form ctrl]]
    (get-in db [form ctrl :activated?])))
+

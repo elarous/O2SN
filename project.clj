@@ -71,7 +71,8 @@
               {:min
                {:source-paths ["src/cljc" "src/cljs" "env/prod/cljs"]
                 :compiler
-                {:output-dir "target/cljsbuild/public/js"
+                {:npm-deps {:left-pad "1.1.3"}
+                 :output-dir "target/cljsbuild/public/js"
                  :output-to "target/cljsbuild/public/js/app.js"
                  :source-map "target/cljsbuild/public/js/app.js.map"
                  :optimizations :advanced

@@ -12,41 +12,30 @@
     (apply goog.object/getValueByKeys sm k ks)
     (goog.object/get sm k)))
 
-(def button (component "Button"))
-(def button-content (component "Button" "Content"))
-(def icon (component "Icon"))
-(def menu (component "Menu"))
-(def menu-menu (component "Menu" "Menu"))
-(def menu-item (component "Menu" "Item"))
-(def input (component "Input"))
-(def label (component "Label"))
-(def grid (component "Grid"))
-(def grid-column (component "Grid" "Column"))
-(def header (component "Header"))
-(def image (component "Image"))
-(def segment (component "Segment"))
-(def message (component "Message"))
-(def form (component "Form"))
-(def form-input (component "Form" "Input"))
-(def form-field (component "Form" "Field"))
-(def transition (component "Transition"))
-(def transition-group (component "Transition" "Group"))
-(def transitionable-portal (component "TransitionablePortal"))
-(def responsive (component "Responsive"))
+(def button                (r/adapt-react-class (component "Button")))
+(def button-content        (r/adapt-react-class (component "Button" "Content")))
+(def icon                  (r/adapt-react-class (component "Icon")))
+(def menu                  (r/adapt-react-class (component "Menu")))
+(def menu-menu             (r/adapt-react-class (component "Menu" "Menu")))
+(def menu-item             (r/adapt-react-class (component "Menu" "Item")))
+(def input                 (r/adapt-react-class (component "Input")))
+(def label                 (r/adapt-react-class (component "Label")))
+(def grid                  (r/adapt-react-class (component "Grid")))
+(def grid-column           (r/adapt-react-class (component "Grid" "Column")))
+(def header                (r/adapt-react-class (component "Header")))
+(def image                 (r/adapt-react-class (component "Image")))
+(def segment               (r/adapt-react-class (component "Segment")))
+(def message               (r/adapt-react-class (component "Message")))
+(def form                  (r/adapt-react-class (component "Form")))
+(def form-input            (r/adapt-react-class (component "Form" "Input")))
+(def form-field            (r/adapt-react-class (component "Form" "Field")))
+(def transition            (r/adapt-react-class (component "Transition")))
+(def transition-group      (r/adapt-react-class (component "Transition" "Group")))
+(def transitionable-portal (r/adapt-react-class (component "TransitionablePortal")))
+(def responsive            (r/adapt-react-class (component "Responsive")))
 
 ;; motions
 
 (def motion (r/adapt-react-class js/ReactMotion.Motion))
 (def presets js/ReactMotion.presets)
-
-(defn spring [n opts]
-  (js/ReactMotion.spring n opts))
-
-(defn get-vmap [props vals]
-  (let [vals (js->clj vals :keywordize-keys true)
-        calc-pairs (map (fn [pair]
-                          (let [f (first pair)
-                                s (second pair)]
-                            (hash-map f ((:fn s) (get vals (:val s)))))) props)
-        vmap (reduce merge calc-pairs)]
-    vmap))
+(def spring js/ReactMotion.spring)

@@ -16,40 +16,40 @@
 
 (defn main-menu []
   [ui/menu {:size "large"
-               :pointing true
-               :stackable true
-               :inverted false}
+            :pointing true
+            :stackable true
+            :inverted false}
    [ui/menu-item {:name "logo"}]
    [ui/menu-item {:name "first-item"
-                     :active true
-                     :on-click #(js/alert "first item clicked !")}
+                  :active true
+                  :on-click #(js/alert "first item clicked !")}
     [ui/icon {:name "home"}]
     "News"
     [ui/label 3]]
    [ui/menu-item {:name "first-item"
-                     :active false
-                     :on-click #(js/alert "first item clicked !")}
+                  :active false
+                  :on-click #(js/alert "first item clicked !")}
     [ui/icon {:name "envelope"}]
     "Messages"
     [ui/label 1]]
    [ui/menu-item {:name "first-item"
-                     :active false
-                     :on-click #(js/alert "first item clicked !")}
+                  :active false
+                  :on-click #(js/alert "first item clicked !")}
     [ui/icon {:name "users"}]
     "Friends"
     [ui/label 5]]
    [ui/menu-item {:name "second-item"
-                     :active false
-                     :on-click #(js/alert "second item clicked !")}
+                  :active false
+                  :on-click #(js/alert "second item clicked !")}
     [ui/icon {:name "newspaper"}]
     "My Wall"]
    [ui/menu-menu {:position "right"}
     [ui/menu-item {:name "first-item"
-                      :active false}
+                   :active false}
      [ui/input {:icon "search"
-                   :placeholder "Search For News ..."}]]
+                :placeholder "Search For News ..."}]]
     [ui/menu-item {:name "first-item"
-                      :active false}
+                   :active false}
      [ui/button {:primary true}
       "Login"]]]])
 
@@ -74,8 +74,8 @@
                          :opacity (.-s v)
                          :height (str (.-x v) "px")}}
            [ui/label {:basic true
-                         :color (if valid? "teal" "red")
-                         :pointing "below"}
+                      :color (if valid? "teal" "red")
+                      :pointing "below"}
             (if-not valid? msg "(^ _ ^)'")]]))])))
 
 (defn login-username []
@@ -122,9 +122,9 @@
        :id "login-password"
        :icon (r/as-element
               [ui/icon {:name "lock"
-                           :color (if (and valid? form-valid?)
-                                    "teal"
-                                    "red")}])
+                        :color (if (and valid? form-valid?)
+                                 "teal"
+                                 "red")}])
        :icon-position "left"
        :loading @(rf/subscribe [:login-password-validating?])
        :autoFocus true
@@ -144,13 +144,13 @@
   (let [form-errors? @(rf/subscribe [:login-errors?])]
     [:div.login-form
      [ui/grid {:text-align "center"
-                  :style {:height "100%"}
-                  :vertical-align "middle"}
+               :style {:height "100%"}
+               :vertical-align "middle"}
       [ui/grid-column {:style {:max-width 450}}
        [ui/header {:as "h2" :text-align "center" :color "teal"}
         "Log to your account"]
        [ui/form {:size "large"
-                    :error form-errors?}
+                 :error form-errors?}
         [ui/segment {:stacked true}
          [login-username]
          [login-password]
@@ -186,7 +186,7 @@
        :id "signup-email"
        :icon (r/as-element
               [ui/icon {:name "mail"
-                           :color (if valid? "teal" "red")}])
+                        :color (if valid? "teal" "red")}])
        :icon-position "left"
        :loading @(rf/subscribe [:signup-email-validating?])
        :autoFocus true
@@ -212,27 +212,28 @@
       @(rf/subscribe [:signup-username-error])
       :username
       :signup-form]
-     [ui/form-input {:fluid true
-                        :id "signup-username"
-                        :icon (r/as-element [ui/icon
-                                             {:name "user"
-                                              :color (if valid? "teal" "red")}])
-                        :icon-position "left"
-                        :loading @(rf/subscribe [:signup-username-validating?])
-                        :autoFocus true
-                        :error (not valid?)
-                        :value @(rf/subscribe [:signup-username])
-                        :placeholder "Username"
-                        :on-focus #(.setSelectionRange (-> % .-target)
-                                                       (-> % .-target .-value .-length)
-                                                       (-> % .-target .-value .-length))
-                        :on-blur #(if valid?
-                                    (rf/dispatch [:validate-signup-username-ajax
-                                                  (-> % .-target .-value)]))
-                        :on-change #(do (rf/dispatch [:set-signup-username
-                                                      (-> % .-target .-value)])
-                                        (rf/dispatch [:validate-signup-username
-                                                      (-> % .-target .-value)]))}]]))
+     [ui/form-input
+      {:fluid true
+       :id "signup-username"
+       :icon (r/as-element [ui/icon
+                            {:name "user"
+                             :color (if valid? "teal" "red")}])
+       :icon-position "left"
+       :loading @(rf/subscribe [:signup-username-validating?])
+       :autoFocus true
+       :error (not valid?)
+       :value @(rf/subscribe [:signup-username])
+       :placeholder "Username"
+       :on-focus #(.setSelectionRange (-> % .-target)
+                                      (-> % .-target .-value .-length)
+                                      (-> % .-target .-value .-length))
+       :on-blur #(if valid?
+                   (rf/dispatch [:validate-signup-username-ajax
+                                 (-> % .-target .-value)]))
+       :on-change #(do (rf/dispatch [:set-signup-username
+                                     (-> % .-target .-value)])
+                       (rf/dispatch [:validate-signup-username
+                                     (-> % .-target .-value)]))}]]))
 
 (defn signup-password []
   (let [valid? @(rf/subscribe [:signup-password-valid?])]
@@ -295,18 +296,18 @@
 (defn signup-form []
   [:div.signup-form
    [ui/grid {:text-align "center"
-                :style {:height "100%"}
-                :vertical-align "middle"}
+             :style {:height "100%"}
+             :vertical-align "middle"}
     [ui/grid-column {:style (if @(rf/subscribe [:signed-up?])
-                                 {:max-width "50%"}
-                                 {:max-width 450})}
+                              {:max-width "50%"}
+                              {:max-width 450})}
      (if-not @(rf/subscribe [:signed-up?])
        [:div
         [ui/header {:as "h2"  :text-align "center" :color "teal"}
          "Create your new account "]
         [ui/form {:size "large"
-                     :error @(rf/subscribe [:signup-errors?])
-                     :success true}
+                  :error @(rf/subscribe [:signup-errors?])
+                  :success true}
          [ui/segment {:stacked true}
           [signup-email]
           [signup-username]
@@ -321,11 +322,11 @@
             :on-click #(rf/dispatch [:signup])}
            "Sign Up"]]
          [ui/transition {:visible @(rf/subscribe [:signup-errors?])
-                            :animation "scale"
-                            :duration 500}
+                         :animation "scale"
+                         :duration 500}
           [ui/message {:error true
-                          :header @(rf/subscribe [:signup-error-header])
-                          :content @(rf/subscribe [:signup-error-msg])}]]]
+                       :header @(rf/subscribe [:signup-error-header])
+                       :content @(rf/subscribe [:signup-error-msg])}]]]
         [ui/message "Already a member ? "
          [:a {:href "/#/login"} "Log In"]]]
        [ui/motion {:default-style {:x 0}
@@ -344,23 +345,19 @@
                          [:p "A confirmation email has been sent to you"]
                          [:a {:href "#/login"} "Login to your new account"]])}]]))])]]])
 
+(defn page-trans [child]
+  [ui/transition {:visible (not @(rf/subscribe [:page-hiding?]))
+                  :animation "scale"
+                  :duration 500
+                  :transition-on-mount true
+                  :mount-on-show true}
+   [:div child]])
+
 (defn login-page []
-  [ui/transition {:visible true
-                     :animation "fade"
-                     :duration 1300
-                     :transition-on-mount true
-                     :mount-on-show true}
-   [:div
-    [login-form]]])
+  [page-trans [login-form]])
 
 (defn signup-page []
-  [ui/transition {:visible true
-                     :animation "fade"
-                     :duration 1300
-                     :transition-on-mount true
-                     :mount-on-show true}
-   [:div
-    [signup-form]]])
+  [page-trans [signup-form]])
 
 (defn welcome-page []
   [:div "Welcome page"])
@@ -377,28 +374,32 @@
    (let [page @(rf/subscribe [:page])]
      [(get pages page)])])
 
+(defn require-login [page]
+  (if @(rf/subscribe [:user-logged-in])
+    (rf/dispatch [:set-active-page page])
+    (rf/dispatch [:set-active-page :login])))
+
+(defn require-logout [page]
+  (when-not @(rf/subscribe [:user-logged-in])
+    (rf/dispatch [:set-active-page page])))
+
 ;; -------------------------
 ;; Routes
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (when @(rf/subscribe [:user-logged-in])
-    (rf/dispatch [:set-active-page :home])))
+  (require-login :home))
 
 (secretary/defroute "/welcome" []
-  (when-not @(rf/subscribe [:user-logged-in])
-    (rf/dispatch [:set-active-page :welcome])))
+  (require-logout :welcome))
 
 (secretary/defroute "/login" []
-  (when-not @(rf/subscribe [:user-logged-in])
-    (rf/dispatch [:set-active-page :login])))
+  (require-logout :login))
 
 (secretary/defroute "/signup" []
-  (when-not @(rf/subscribe [:user-logged-in])
-    (rf/dispatch [:set-active-page :signup])))
+  (require-logout :signup))
 
 (secretary/defroute "/about" []
-  (println "about")
   (rf/dispatch [:set-active-page :about]))
 
 (secretary/defroute "/logout" []

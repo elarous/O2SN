@@ -55,10 +55,19 @@
  (fn [_ _]
    db/default-db))
 
-(reg-event-db
+(reg-event-fx
  :set-active-page
+ (fn [{db :db} [_ page]]
+   {:db (assoc-in db [:page :hiding?] true)
+    :dispatch-later [{:ms (get-in db [:page :duration])
+                      :dispatch [:set-page page]}]}))
+
+(reg-event-db
+ :set-page
  (fn [db [_ page]]
-   (assoc db :page page)))
+   (-> db
+       (assoc-in [:page :active] page)
+       (assoc-in [:page :hiding?] false))))
 
 (reg-event-db
  :set-docs
@@ -88,13 +97,13 @@
                  :on-failure [:login-fail true]}
     :db (assoc-in db [:login-form :processing?] true)}))
 
-(reg-event-db
+(reg-event-fx
  :login-success
- (fn [db [_ resp]]
-   (-> (assoc-in db [:user :logged-in?] true)
-       (assoc-in [:login-form :errors?] false)
-       (assoc-in [:login-form :processing?] false)
-       (assoc :page :home))))
+ (fn [{db :db} [_ resp]]
+   {:db (-> (assoc-in db [:user :logged-in?] true)
+            (assoc-in [:login-form :errors?] false)
+            (assoc-in [:login-form :processing?] false))
+    :dispatch [:set-active-page :home]}))
 
 (reg-event-db
  :login-fail
@@ -113,12 +122,12 @@
                  :on-success [:logout-success]
                  :on-failure [:logout-fail]}}))
 
-(reg-event-db
+(reg-event-fx
  :logout-success
- (fn [db _]
-   (-> db
-       (assoc-in [:user :logged-in?] false)
-       (assoc :page :login))))
+ (fn [{db :db} _]
+   {:db (-> db
+            (assoc-in [:user :logged-in?] false))
+    :dispatch [:set-active-page :login]}))
 
 (reg-event-db
  :logout-fail
@@ -195,7 +204,6 @@
  :set-form-control-activated?
  (fn [db [_ form ctrl]]
    (assoc-in db [form ctrl :activated?] true)))
-
 
 (reg-event-fx
  :validate-signup-email
@@ -342,7 +350,12 @@
 (reg-sub
  :page
  (fn [db _]
-   (:page db)))
+   (get-in db [:page :active])))
+
+(reg-sub
+ :page-hiding?
+ (fn [db _]
+   (get-in db [:page :hiding?])))
 
 (reg-sub
  :docs

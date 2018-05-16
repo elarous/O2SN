@@ -1,7 +1,9 @@
 (ns o2sn.db)
 
 (def default-db
-  {:page :home
+  {:page {:active :home
+          :duration 500
+          :hiding? false}
    :user {:logged-in? false}
    :welcome {:form :login-form
              :animation-completed? true}

@@ -147,7 +147,7 @@
                   :style {:height "100%"}
                   :vertical-align "middle"}
       [ui/grid-column {:style {:max-width 450}}
-       [ui/header {:as "h2" :text-align "center" :style {:color "white"}}
+       [ui/header {:as "h2" :text-align "center" :color "teal"}
         "Log to your account"]
        [ui/form {:size "large"
                     :error form-errors?}
@@ -157,8 +157,7 @@
          [ui/button
           {:color (if (and @(rf/subscribe [:login-button-enabled?])
                            (not form-errors?))
-                    "teal"
-                    "red")
+                    "teal" "red")
            :fluid true
            :disabled (not @(rf/subscribe [:login-button-enabled?]))
            :size "large"
@@ -303,7 +302,7 @@
                                  {:max-width 450})}
      (if-not @(rf/subscribe [:signed-up?])
        [:div
-        [ui/header {:as "h2"  :text-align "center" :style {:color "white"}}
+        [ui/header {:as "h2"  :text-align "center" :color "teal"}
          "Create your new account "]
         [ui/form {:size "large"
                      :error @(rf/subscribe [:signup-errors?])

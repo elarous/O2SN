@@ -8,28 +8,26 @@
             [o2sn.db.users :as db]
             [o2sn.validation :as v]
             [postal.core :as email]
-            [o2sn.layout :as layout]))
+            [o2sn.layout :as layout]
+            [o2sn.config :as config]))
 
-(def email-config {:host "smtp.gmail.com"
-                   :user "username"
-                   :pass "password"
-                   :ssl true})
+(def email-config (:email-config config/env))
+(def host (str (:addr (:server config/env))
+               ":"
+               (:port (:server config/env))))
 
-(def server-addr "https://localhost:3000/")
-
-(def from-email "some@email.com")
-
+;; TODO : the hard coded link should be changed later
 (defn- send-confirm! [email]
-  (let [confirm-hash (-> (h/sha256 (str (rand 1000)))
+  (let [confirm-hash (-> (h/sha256 (str (rand 10000)))
                          (c/bytes->hex))
         email-body (str "click this link to confirm your account "
-                        "<a href=\""
-                        server-addr
-                        "user/confirm/"
+                        "<a href=\"http://"
+                        host
+                        "/user/confirm/"
                         confirm-hash
                         "\">Confirm</a>")]
-    (email/send-message email-config
-                        {:from from-email
+    (email/send-message (select-keys email-config [:host :user :pass :ssl])
+                        {:from (:email email-config)
                          :to [email]
                          :cc ""
                          :subject "Confirm your o2sn account"

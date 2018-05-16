@@ -77,7 +77,7 @@
 
   (context "/api" []
     :tags ["thingie"]
-        (GET "/admin" []
+    (GET "/admin" []
       :auth-rules users/admin?
       :summary "the admin page"
       (ok "Admin Data"))))

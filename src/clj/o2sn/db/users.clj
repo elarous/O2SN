@@ -3,8 +3,8 @@
             [clojure.spec.alpha :as s]))
 
 ;; setting up the database connection
-(db/set-arango!)
-(db/set-db! :o2sn)
+
+#_(db/set-db! :o2sn)
 
 (s/def ::email string?)
 (s/def ::username string?)

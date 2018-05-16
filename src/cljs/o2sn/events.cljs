@@ -8,8 +8,7 @@
                                    debug]]
             [day8.re-frame.http-fx]
             [ajax.core :as ajax]
-            [o2sn.validation :as v]
-            ))
+            [o2sn.validation :as v]))
 
 ;;effect handlers
 (reg-fx
@@ -35,8 +34,8 @@
                 #(dispatch [:username-not-valid % (first args)]))
      :username-ajax (v/username-exists?
                      value
-                     #(dispatch [:username-valid])
-                     #(dispatch [:username-not-valid %]))
+                     #(dispatch [:username-valid (first args)])
+                     #(dispatch [:username-not-valid % (first args)]))
      :password (v/validate-password
                 value
                 #(dispatch [:password-valid (first args)])
@@ -234,7 +233,7 @@
 (reg-event-fx
  :validate-signup-username-ajax
  (fn [{db :db} [_ username]]
-   {:validate [:username-ajax username]
+   {:validate [:username-ajax username :signup-form]
     :db (assoc-in db [:signup-form :username :validating] true)}))
 
 (reg-event-db

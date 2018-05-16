@@ -50,10 +50,11 @@
       (dissoc :session)))
 
 (defn login [username password req]
-  (if-let [user (db/get-user username password)]
-    (do
+  (if-let [user (db/get-user :username username)]
+    (if (hashers/check password (:password user))
       (->> (ok "user logged in successfully")
-           (set-user! user req)))
+           (set-user! user req))
+      (unauthorized "bad credentials."))
     (unauthorized "bad credentials.")))
 
 (defn logout [req]

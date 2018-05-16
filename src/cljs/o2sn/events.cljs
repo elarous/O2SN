@@ -30,16 +30,16 @@
                   #(dispatch [:email-not-valid %]))
      :username (v/validate-username
                 value
-                #(dispatch [:username-valid])
-                #(dispatch [:username-not-valid %]))
+                #(dispatch [:username-valid (first args)])
+                #(dispatch [:username-not-valid % (first args)]))
      :username-ajax (v/username-exists?
                      value
-                     #(dispatch [:username-valid])
-                     #(dispatch [:username-not-valid %]))
+                     #(dispatch [:username-valid (first args)])
+                     #(dispatch [:username-not-valid % (first args)]))
      :password (v/validate-password
                 value
-                #(dispatch [:password-valid])
-                #(dispatch [:password-not-valid %]))
+                #(dispatch [:password-valid (first args)])
+                #(dispatch [:password-not-valid % (first args)]))
 
      :repassword (v/validate-repassword
                   value
@@ -77,10 +77,11 @@
 
 (reg-event-fx
  :login
- (fn [{db :db} [_ username password]]
+ (fn [{db :db} [_]]
    {:http-xhrio {:method :post
                  :uri "/user/login"
-                 :params {:username username :password password}
+                 :params {:username (get-in db [:login-form :username :value])
+                          :password (get-in db [:login-form :password :value])}
                  :format (ajax/json-request-format)
                  :response-format (ajax/text-response-format)
                  :on-success [:login-success]
@@ -92,7 +93,8 @@
  (fn [db [_ resp]]
    (-> (assoc-in db [:user :logged-in?] true)
        (assoc-in [:login-form :errors?] false)
-       (assoc-in [:login-form :processing?] false))))
+       (assoc-in [:login-form :processing?] false)
+       (assoc :page :home))))
 
 (reg-event-db
  :login-fail
@@ -108,13 +110,21 @@
                  :uri "/user/logout"
                  :format (ajax/text-request-format)
                  :response-format (ajax/text-response-format)
-                 :on-success [:logged-out true]
-                 :on-failure [:logged-out false]}}))
+                 :on-success [:logout-success]
+                 :on-failure [:logout-fail]}}))
 
 (reg-event-db
- :logged-out
- (fn [db [_ logged-out? resp]]
-   (assoc-in db [:user :logged-in?] (not logged-out?))))
+ :logout-success
+ (fn [db _]
+   (-> db
+       (assoc-in [:user :logged-in?] false)
+       (assoc :page :login))))
+
+(reg-event-db
+ :logout-fail
+ (fn [db _]
+   (-> db
+       (assoc-in [:user :logged-in?] true))))
 
 (reg-event-fx
  :get-admin-content
@@ -139,14 +149,26 @@
 
 ;; login form events
 (reg-event-db
- :set-login-form-username
+ :set-login-username
  (fn [db [_ new-val]]
-   (assoc-in db [:login-form :username] new-val)))
+   (assoc-in db [:login-form :username :value] new-val)))
 
 (reg-event-db
- :set-login-form-password
+ :set-login-password
  (fn [db [_ new-val]]
-   (assoc-in db [:login-form :password] new-val)))
+   (assoc-in db [:login-form :password :value] new-val)))
+
+(reg-event-fx
+ :validate-login-username
+ (fn [{db :db} [_ username]]
+   {:validate [:username username :login-form]
+    :db (assoc-in db [:login-form :username :validating] true)}))
+
+(reg-event-fx
+ :validate-login-password
+ (fn [{db :db} [_ password]]
+   {:validate [:password password :login-form]
+    :db (assoc-in db [:login-form :password :validating] true)}))
 
 ;; sign up form events
 (reg-event-db
@@ -170,9 +192,9 @@
    (assoc-in db [:signup-form :repassword :value] new-val)))
 
 (reg-event-db
- :set-signup-controle-activated?
- (fn [db [_ ctrl]]
-   (assoc-in db [:signup-form ctrl :activated?] true)))
+ :set-form-control-activated?
+ (fn [db [_ form ctrl]]
+   (assoc-in db [form ctrl :activated?] true)))
 
 
 (reg-event-fx
@@ -205,50 +227,50 @@
 (reg-event-fx
  :validate-signup-username
  (fn [{db :db} [_ username]]
-   {:validate [:username username]
+   {:validate [:username username :signup-form]
     :db (assoc-in db [:signup-form :username :validating] true)}))
 
 (reg-event-fx
  :validate-signup-username-ajax
  (fn [{db :db} [_ username]]
-   {:validate [:username-ajax username]
+   {:validate [:username-ajax username :signup-form]
     :db (assoc-in db [:signup-form :username :validating] true)}))
 
 (reg-event-db
  :username-valid
- (fn [db _]
+ (fn [db [_ form]]
    (-> db
-       (assoc-in [:signup-form :username :valid] true)
-       (assoc-in [:signup-form :username :validating] false))))
+       (assoc-in [form :username :valid] true)
+       (assoc-in [form :username :validating] false))))
 
 (reg-event-db
  :username-not-valid
- (fn [db [_ err-map]]
+ (fn [db [_ err-map form]]
    (-> db
-       (assoc-in [:signup-form :username :valid] false)
-       (assoc-in [:signup-form :username :error] (:username err-map))
-       (assoc-in [:signup-form :username :validating] false))))
+       (assoc-in [form :username :valid] false)
+       (assoc-in [form :username :error] (:username err-map))
+       (assoc-in [form :username :validating] false))))
 
 (reg-event-fx
  :validate-signup-password
  (fn [{db :db} [_ password]]
-   {:validate [:password password]
+   {:validate [:password password :signup-form]
     :db (assoc-in db [:signup-form :password :validating] true)}))
 
 (reg-event-db
  :password-valid
- (fn [db _]
+ (fn [db [_ form]]
    (-> db
-       (assoc-in [:signup-form :password :valid] true)
-       (assoc-in [:signup-form :password :validating] false))))
+       (assoc-in [form :password :valid] true)
+       (assoc-in [form :password :validating] false))))
 
 (reg-event-db
  :password-not-valid
- (fn [db [_ err-map]]
+ (fn [db [_ err-map form]]
    (-> db
-       (assoc-in [:signup-form :password :valid] false)
-       (assoc-in [:signup-form :password :error] (:password err-map))
-       (assoc-in [:signup-form :password :validating] false))))
+       (assoc-in [form :password :valid] false)
+       (assoc-in [form :password :error] (:password err-map))
+       (assoc-in [form :password :validating] false))))
 
 (reg-event-fx
  :validate-signup-repassword
@@ -351,24 +373,60 @@
 ;; login form subscriptions
 
 (reg-sub
- :login-form-username
+ :login-username
  (fn [db _]
-   (get-in db [:login-form :username] "")))
+   (get-in db [:login-form :username :value])))
 
 (reg-sub
- :login-form-password
+ :login-password
  (fn [db _]
-   (get-in db [:login-form :password] "")))
+   (get-in db [:login-form :password :value])))
 
 (reg-sub
- :login-form-errors?
+ :login-errors?
  (fn [db _]
    (get-in db [:login-form :errors?])))
 
 (reg-sub
- :login-form-processing?
+ :login-processing?
  (fn [db _]
    (get-in db [:login-form :processing?])))
+
+(reg-sub
+ :login-username-valid?
+ (fn [db _]
+   (get-in db [:login-form :username :valid])))
+
+(reg-sub
+ :login-username-error
+ (fn [db _]
+   (get-in db [:login-form :username :error])))
+
+(reg-sub
+ :login-username-validating?
+ (fn [db _]
+   (get-in db [:login-form :username :validating])))
+
+(reg-sub
+ :login-password-valid?
+ (fn [db _]
+   (get-in db [:login-form :password :valid])))
+
+(reg-sub
+ :login-password-error
+ (fn [db _]
+   (get-in db [:login-form :password :error])))
+
+(reg-sub
+ :login-password-validating?
+ (fn [db _]
+   (get-in db [:login-form :password :validating])))
+
+(reg-sub
+ :login-button-enabled?
+ (fn [db _]
+   (and (get-in db [:login-form :username :valid])
+        (get-in db [:login-form :password :valid]))))
 
 ;; sign up forms subscriptions
 
@@ -486,6 +544,7 @@
    (get-in db [:signup-form :signed-up?])))
 
 (reg-sub
- :signup-control-activated?
- (fn [db [_ ctrl]]
-   (get-in db [:signup-form ctrl :activated?])))
+ :form-control-activated?
+ (fn [db [_ form ctrl]]
+   (get-in db [form ctrl :activated?])))
+

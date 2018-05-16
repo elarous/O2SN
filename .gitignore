@@ -11,3 +11,5 @@ pom.xml.asc
 .lein-plugins/
 .lein-failures
 .nrepl-port
+dev-config.edn
+test-config.edn

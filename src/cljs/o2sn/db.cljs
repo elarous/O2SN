@@ -5,8 +5,16 @@
    :user {:logged-in? false}
    :welcome {:form :login-form
              :animation-completed? true}
-   :login-form {:username ""
-                :password ""
+   :login-form {:username {:value ""
+                           :valid true
+                           :error "Invalid Username"
+                           :validating false
+                           :activated? false}
+                :password {:value ""
+                           :valid true
+                           :error "Invalid Password"
+                           :validating false
+                           :activated? false}
                 :errors? false
                 :processing? false}
    :signup-form {:email {:value ""

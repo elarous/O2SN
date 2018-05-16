@@ -6,7 +6,9 @@
             [clojure.spec.test.alpha :as test]
             [clojure.spec.gen.alpha :as gen]
             [clojure.test.check :as check]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [mount.core :as m]
+            [o2sn.config :as config])
   (:import [com.arangodb
             ArangoDB
             ArangoDatabase
@@ -32,8 +34,26 @@
             EdgeDeleteOptions]
            [java.lang String]))
 
-(def ^:dynamic *arango* nil)
-(def ^:dynamic *db* nil)
+(defn create-arango!
+  []
+  (let [db-conf (:database config/env)]
+    (-> (ArangoDB$Builder.)
+        (.host (:host db-conf) (:port db-conf))
+        (.user (:user db-conf))
+        (.password (:password db-conf))
+        .build)))
+
+(m/defstate arango
+  :start (create-arango!)
+  :stop (.shutdown arango))
+
+(defn use-database!
+  []
+  (.db arango (get-in config/env [:database :dbname])))
+
+(m/defstate db
+  :start (use-database!))
+
 (def ^:dynamic *coll* nil)
 (def ^:dynamic *graph* nil)
 
@@ -111,7 +131,7 @@
   (with-db :mydb
     (do-this thing)
     (do-other thing))"
-  [db & body] `(try (binding [*db* (.db *arango* ~(name db))]
+  [db & body] `(try (binding [db (.db arango ~(name db))]
           ~@body)
         (catch ArangoDBException e#
           (println "Exception using db " ~db " : " (.getMessage e#)))))
@@ -128,7 +148,7 @@
       (do-this)
       (do-that)))"
   [coll & body]
-  `(binding [*coll* (.collection *db* ~(name coll))]
+  `(binding [*coll* (.collection db ~(name coll))]
      ~@body))
 
 (sp/fdef with-coll
@@ -143,7 +163,7 @@
       (do-this)
       (do-that)))"
   [graph & body]
-  `(binding [*graph* (.graph *db* ~(name graph))]
+  `(binding [*graph* (.graph db ~(name graph))]
      ~@body))
 
 (sp/fdef with-graph
@@ -193,39 +213,12 @@
                       (->> % :ret keys set))
                    (= (->> % :args :m vals set)
                       (->> % :ret vals set))))
-
-(defn set-arango!
-  "set the arangodb instance to use, if no configuration map is  given the needed configuration is loaded from the arangodb.properties file that should be in the class path."
-  ([]
-   (alter-var-root #'*arango* (fn [_] (.build (ArangoDB$Builder.)))))
-  ([{:keys [host port user password]}]
-   (alter-var-root #'*arango* (fn [_] (-> (ArangoDB$Builder.)
-                                          (.host host port)
-                                          (.user user)
-                                          (.password password)
-                                          .build)))))
-
-(sp/fdef set-arango!
-         :args (sp/cat :opts-map (sp/? map?))
-         :ret #(instance? ArangoDB %))
-
-(defn set-db!
-  "set the database to use with database operations."
-  [db]
-  (alter-var-root #'*db* (fn [_] (.db *arango* (name db)))))
-
-(sp/fdef set-db!
-         :args (sp/cat :arangodb #(instance? ArangoDatabase %))
-         :ret #(instance? ArangoDatabase %)
-         :fn #(= (-> % :args :arangodb)
-                 (-> % :ret)))
-
 ;; database functions
 
 (defn create-db!
   "create a new database with the given name. should be called after set-arango!."
   [db]
-  (.createDatabase *arango* (name db)))
+  (.createDatabase arango (name db)))
 
 (sp/fdef create-db!
          :args (sp/cat :db-name simple-keyword?))
@@ -233,7 +226,7 @@
 (defn drop-db!
   "drop the database with the given name. should be called after set-arango!."
   [db]
-  (-> (.db *arango* (name db))
+  (-> (.db arango (name db))
       .drop))
 
 (sp/fdef drop-db!
@@ -242,7 +235,7 @@
 (defn db-exists?
   "check whether the database with the given name exists. should be called after set-arango!."
   [db]
-  (-> (.db *arango* (name db))
+  (-> (.db arango (name db))
       .exists))
 
 (sp/fdef db-exists?
@@ -253,7 +246,7 @@
 (defn create-coll!
   "create a new collection with the given name. it should be called after set-db! or inside with-db."
   [coll]
-  (-> *db*
+  (-> db
       (.createCollection (name coll))))
 
 (sp/fdef create-coll!
@@ -262,7 +255,7 @@
 (defn drop-coll!
   "drop the collection with the given name. it should be called after set-db! or inside with-db."
   [coll]
-  (-> *db*
+  (-> db
       (.collection (name coll))
       .drop))
 
@@ -272,7 +265,7 @@
 (defn truncate-coll!
   "truncate the collection with the given name. it should be called after set-db! or inside with-db."
   [coll]
-  (-> *db*
+  (-> db
       (.collection (name coll))
       .truncate))
 
@@ -282,7 +275,7 @@
 (defn coll-exists?
   "check if a collection exists using it's name. should be called after set-db! or inside with-db."
   [coll]
-  (-> *db*
+  (-> db
       (.collection (name coll))
       .exists))
 
@@ -310,7 +303,7 @@
                      (map->opts (DocumentReadOptions.) opts-map))
        ednize))
   ([doc-coll doc-key opts-map]
-   (-> *db*
+   (-> db
        (.getDocument (str (name doc-coll) "/" (name doc-key))
                      String
                      (map->opts (DocumentReadOptions.) opts-map))
@@ -525,7 +518,7 @@
                         (-> bindings
                             keys->names
                             java.util.HashMap.))
-         cursor (-> *db*
+         cursor (-> db
                     (.query query-str bind-vars nil String))]
      (create-seq cursor))))
 
@@ -538,7 +531,7 @@
 (defn graph-exists?
   "check whether the graph with the given name exists or not. should be called after set-db! or inside with-db."
   [graph]
-  (-> *db*
+  (-> db
       (.graph (name graph))
       .exists))
 
@@ -556,7 +549,7 @@
 (defn create-graph!
   "create a graph using the given map. it should be called after set-db! or inside with-db."
   [{:keys [graph-name graph-edges graph-options]}]
-  (.createGraph *db*
+  (.createGraph db
                 (name graph-name)
                 (map edge-def graph-edges)
                 (map->opts (GraphCreateOptions.) graph-options)))
@@ -579,7 +572,7 @@
 (defn delete-graph!
   "delete the graph by it's name. it should be called after set-db! or inside with-db."
   [graph]
-  (-> *db*
+  (-> db
       (.graph (name graph))
       .drop))
 

@@ -3,8 +3,8 @@
             [clojure.spec.alpha :as s]))
 
 ;; setting up the database connection
-(db/set-arango!)
-(db/set-db! :o2sn)
+
+#_(db/set-db! :o2sn)
 
 (s/def ::email string?)
 (s/def ::username string?)
@@ -28,17 +28,28 @@
         :new
         db/ednize)))
 
-(defn get-user
-  ([k]
-   (db/with-coll :users
-     (db/get-doc k)))
-  ([username password]
-   (let [q-str "for u in users
-                filter u.username == @username
-                and u.password == @password
+(defmulti get-user (fn [by _] by))
+
+(defmethod get-user :key
+  [_ k]
+  (db/with-coll :users
+    (db/get-doc k)))
+
+(defmethod get-user :email
+  [_ email]
+  (let [q-str "for u in users
+                filter u.email == @email
                 return u"]
-     (-> (db/query! q-str {:username username :password password})
-         first))))
+    (-> (db/query! q-str {:email email})
+        first)))
+
+(defmethod get-user :username
+  [_ username]
+  (let [q-str "for u in users
+                filter u.username == @username
+                return u"]
+    (-> (db/query! q-str {:username username})
+        first)))
 
 (defn username-exists? [username]
   (let [q-str "for u in users

@@ -16,8 +16,6 @@
                           :opt-un [::contains]))
 (s/def ::contains (s/coll-of ::location))
 
-(db/set-db! :o2sn)
-
 (defn create-locs-graph! []
   (db/create-graph! graph-def))
 

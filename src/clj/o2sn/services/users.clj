@@ -16,6 +16,9 @@
                ":"
                (:port (:server config/env))))
 
+(defn by-key [k]
+  (db/get-user :key k))
+
 ;; TODO : the hard coded link should be changed later
 (defn- send-confirm! [email]
   (let [confirm-hash (-> (h/sha256 (str (rand 10000)))
@@ -50,7 +53,7 @@
 (defn login [username password req]
   (if-let [user (db/get-user :username username)]
     (if (hashers/check password (:password user))
-      (->> (ok "user logged in successfully")
+      (->> (ok user)
            (set-user! user req))
       (unauthorized "bad credentials."))
     (unauthorized "bad credentials.")))

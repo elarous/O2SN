@@ -5,7 +5,9 @@
             [compojure.api.meta :refer [restructure-param]]
             [buddy.auth.accessrules :refer [restrict success error]]
             [buddy.auth :refer [authenticated?]]
-            [o2sn.services.users :as users]))
+            [o2sn.services.users :as users]
+            [o2sn.services.channels :as channels]
+            [o2sn.services.stories :as stories]))
 
 (defn access-error [_ _]
   (unauthorized {:error "unauthorized"}))
@@ -28,12 +30,13 @@
              :data {:info {:version "1.0.0"
                            :title "Sample API"
                            :description "Sample Services"}}}}
-  (GET "/authenticated" []
-    :auth-rules authenticated?
-    :current-user user
-    (ok {:user user}))
 
   (context "/user" []
+    (GET "/authenticated" []
+      :auth-rules authenticated?
+      :current-user user-k
+      (ok (users/by-key user-k)))
+
     (GET "/exists/:username" []
       :auth-rules users/not-authenticated?
       :path-params [username :- String]
@@ -74,6 +77,85 @@
       :auth-rules authenticated?
       :summary "logout the current user."
       (users/logout req)))
+
+  (context "/channels" []
+    (GET "/user/current" req
+      :auth-rules authenticated?
+      :summary "get all the current's user channels"
+      (channels/get-channels (:identity req))))
+
+  (context "/stories" []
+    (GET "/user/:user-key" []
+      :auth-rules authenticated?
+      :path-params [user-key :- String]
+      :summary "get all the stories for the given user"
+      (stories/by-user user-key))
+
+    (GET "/channel/:chan-key" []
+      :auth-rules authenticated?
+      :path-params [chan-key :- String]
+      :summary "get all the stories for the given channel"
+      (stories/by-channel chan-key))
+
+    (GET "/story/:story-key/truth" []
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "get all the users who marked the story as truth"
+      (stories/claim-truth story-key))
+
+    (GET "/story/:story-key/lie" []
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "get all the users who marked the story as lie"
+      (stories/claim-lie story-key))
+
+    (GET "/story/:story-key/like" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "add a like for the given story by the current user"
+      (stories/like story-key (:identity req)))
+
+    (GET "/story/:story-key/dislike" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "add a dislike for the given story by the current user"
+      (stories/dislike story-key (:identity req)))
+
+    (GET "/story/:story-key/unlike" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "remove a like for the given story by the current user"
+      (stories/unlike story-key (:identity req)))
+
+    (GET "/story/:story-key/undislike" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "remove a dislike for the given story by the current user"
+      (stories/undislike story-key (:identity req)))
+
+    (GET "/story/:story-key/mark/truth" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "mark a story as truth"
+      (stories/mark-truth story-key (:identity req)))
+
+    (GET "/story/:story-key/mark/lie" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "mark a story as lie"
+      (stories/mark-lie story-key (:identity req)))
+
+    (GET "/story/:story-key/unmark/truth" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "unmark a story if it's already marked as truth"
+      (stories/unmark-truth story-key (:identity req)))
+
+    (GET "/story/:story-key/unmark/lie" req
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "unmark a story if it's already marked as lie"
+      (stories/unmark-lie story-key (:identity req))))
 
   (context "/api" []
     :tags ["thingie"]

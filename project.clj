@@ -32,6 +32,7 @@
                  [cljsjs/semantic-ui-react "0.79.1-0"]
                  [cljsjs/react-transition-group "2.3.0-0"]
                  [cljsjs/react-motion "0.5.0-0"]
+                 [cljsjs/react-google-maps "9.4.5-0"]
                  [re-frame "0.10.5"]
                  [reagent "0.7.0"]
                  [ring-webjars "0.2.0"]

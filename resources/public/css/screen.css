@@ -1,9 +1,44 @@
 /* so that the form container take the full height */
 body,
-body > div,
-body > div > div,
-body > div > div > div,
-body > div > div > div > div.login-form,
-body > div > div > div > div.signup-form {
+body > #app,
+body > #app > div,
+body > #app > div > div,
+body > #app > div > div > div.login-form,
+body > #app > div > div > div.signup-form {
     height: 100%;
+}
+
+.top-menu {
+    margin: 0px !important;
+    padding: 5px !important;
+}
+
+.top-menu-search, .top-menu-search .input {
+    margin: auto !important;
+    width: 80% !important;
+}
+
+.top-menu-actions {
+    display: flex;
+    justify-content : flex-end;
+    align-items : center;
+}
+
+.top-menu-actions .menu-action {
+    margin-left: 2rem;
+}
+
+.top-menu-avatar {
+    min-height: 42px;
+    min-width : 42px;
+}
+
+#news-cards {
+    display : flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+#news-card {
+    margin : 15px;
 }

@@ -4,9 +4,23 @@
   {:page {:active :home
           :duration 500
           :hiding? false}
-   :user {:logged-in? false}
+   :sidebar {:visible true}
+   :user {:logged-in? false
+          :current nil}
    :welcome {:form :login-form
              :animation-completed? true}
+   :user-channels {:selected nil
+                   :all []}
+   :stories []
+   :story-modal {:story  nil
+                 :visible false
+                 :images {:current 0}
+                 :map-visible? false}
+   :story-like-modal {:visible false
+                      :users []}
+   :categories {"Accident" "purple"
+                "Natural Disaster" "blue"
+                "Event" "violet"}
    :login-form {:username {:value ""
                            :valid true
                            :error "Invalid Username"

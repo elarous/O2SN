@@ -36,12 +36,13 @@
 
 (defn create-arango!
   []
-  (let [db-conf (:database config/env)]
+  (if-let [db-conf (:database config/env)]
     (-> (ArangoDB$Builder.)
         (.host (:host db-conf) (:port db-conf))
         (.user (:user db-conf))
         (.password (:password db-conf))
-        .build)))
+        .build)
+    (println "Cannot get database configuration !")))
 
 (m/defstate arango
   :start (create-arango!)

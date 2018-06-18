@@ -1,8 +1,6 @@
 (ns o2sn.views.signup
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
-            [o2sn.events]
-            [o2sn.subs]
             [o2sn.ui :as ui]
             [o2sn.views.forms :refer [error-label]]))
 

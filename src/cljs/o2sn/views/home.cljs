@@ -1,8 +1,6 @@
 (ns o2sn.views.home
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
-            #_[o2sn.events]
-            #_[o2sn.subs]
             [o2sn.ui :as ui]))
 
 ;; helper functions
@@ -296,39 +294,11 @@
    [chan-contents]])
 
 (defn home-page []
+  [@(rf/subscribe [:active-panel])])
+
+(defn messages-panel []
   [:div
-   #_[main-menu]
-   [ui/sidebar-pushable {:as (ui/component "Segment")}
-    [ui/sidebar {:as (ui/component "Menu")
-                 :animation "push"
-                 :width "thin"
-                 :visible @(rf/subscribe [:sidebar-visible])
-                 :icon "labeled"
-                 :vertical true
-                 :color "teal"
-                 :inverted true}
-     [ui/menu-item {:name "home"
-                    :link true}
-      [ui/icon {:name "home"}]
-      "Home"]
-     [ui/menu-item {:name "subscriptions"
-                    :link true}
-      [ui/icon {:name "podcast"}]
-      "Subscriptions"]
-     [ui/menu-item {:name "messages"
-                    :link true}
-      [ui/icon {:name "envelope"}]
-      "Messages"]
-
-     [ui/menu-item {:name "friends"
-                    :link true}
-      [ui/icon {:name "users"}]
-      "Friends"]
-
-     [ui/menu-item {:name "settings"
-                    :link true}
-      [ui/icon {:name "settings"}]
-      "Settings"]]
-    [ui/sidebar-pusher
-     [ui/segment {:basic true}
-      [home-main]]]]])
+   [:h2 "Messages : "]
+   [:ul
+    [:li "first ...."]
+    [:li "second ...."]]])

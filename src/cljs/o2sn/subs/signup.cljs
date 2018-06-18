@@ -1,6 +1,5 @@
 (ns o2sn.subs.signup
-  (:require [o2sn.db :as db]
-            [re-frame.core :refer [reg-sub]]))
+  (:require [re-frame.core :refer [reg-sub]]))
 
 
 (reg-sub

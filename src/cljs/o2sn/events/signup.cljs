@@ -1,6 +1,5 @@
 (ns o2sn.events.signup
-  (:require [o2sn.db :as db]
-            [re-frame.core :refer [reg-event-fx
+  (:require [re-frame.core :refer [reg-event-fx
                                    reg-event-db
                                    reg-fx
                                    debug]]

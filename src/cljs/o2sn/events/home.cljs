@@ -1,6 +1,5 @@
 (ns o2sn.events.home
-  (:require [o2sn.db :as db]
-            [ajax.core :as ajax]
+  (:require [ajax.core :as ajax]
             [day8.re-frame.http-fx]
             [re-frame.core :refer [reg-event-fx
                                    reg-event-db

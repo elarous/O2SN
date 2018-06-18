@@ -8,6 +8,10 @@ body > #app > div > div > div.signup-form {
     height: 100%;
 }
 
+.h100 {
+    height : 100%;
+}
+
 .top-menu {
     margin: 0px !important;
     padding: 5px !important;

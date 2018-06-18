@@ -13,7 +13,8 @@
             [o2sn.views.home :as home]
             [o2sn.views.login :as login]
             [o2sn.views.signup :as signup]
-            [o2sn.views.top-menu :as tmenu])
+            [o2sn.views.top-menu :as tmenu]
+            [o2sn.views.sidebar :as sidebar])
   (:import goog.History))
 
 (defn about-page []
@@ -27,61 +28,58 @@
                                   :link true}]])}
    [:button "click here"]])
 
-(defn page-trans [child]
+(defn page-trans [page]
   [ui/transition {:visible (not @(rf/subscribe [:page-hiding?]))
                   :animation "scale"
                   :duration 500
                   :transition-on-mount true
                   :mount-on-show true}
-   [:div child]])
+   [:div page]])
 
-(defn login-page []
-  [page-trans [login/login-form]])
+(defn panel-trans [panel]
+  [ui/transition {:visible (not @(rf/subscribe [:panel-hiding?]))
+                  :animation "scale"
+                  :duration 500
+                  :transition-on-mount true
+                  :mount-on-show true}
+   [:div [panel]]])
 
-(defn signup-page []
-  [page-trans [signup/signup-form]])
-
-
-(def pages
-  {:home #'home/home-page
-   :about #'about-page
-   :login #'login-page
-   :signup #'signup-page
-   ;;:new-story #'new-story
-   })
+(defn add-menus [page]
+  [:div.h100
+   [tmenu/main-menu]
+   [sidebar/side-bar
+    [panel-trans page]]])
 
 (defn page []
   [:div
-   (let [page @(rf/subscribe [:page])]
-     [(get pages page)])])
+   (let [page @(rf/subscribe [:active-page])]
+     (if @(rf/subscribe [:with-menu?])
+       (-> page add-menus page-trans)
+       (page-trans [page])))])
 
-(defn require-login [page]
-  (if @(rf/subscribe [:user-logged-in])
-    (rf/dispatch [:set-active-page page])
-    (rf/dispatch [:set-active-page :login])))
-
-(defn require-logout [page]
-  (when-not @(rf/subscribe [:user-logged-in])
-    (rf/dispatch [:set-active-page page])))
+(defn wrap-auth [page-k]
+  (if @(rf/subscribe [:require-login? page-k])
+    (secretary/dispatch! "/login")
+    (rf/dispatch [:set-page page-k])))
 
 ;; -------------------------
 ;; Routes
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (require-login :home))
+  (wrap-auth :home))
 
 (secretary/defroute "/welcome" []
-  (require-logout :welcome))
+  (wrap-auth :welcome))
 
 #_(secretary/defroute "/story/new" []
   (require-login :new-story))
 
 (secretary/defroute "/login" []
-  (require-logout :login))
+  (wrap-auth :login))
 
 (secretary/defroute "/signup" []
-  (require-logout :signup))
+  (wrap-auth :signup))
 
 (secretary/defroute "/about" []
   (rf/dispatch [:set-active-page :about]))
@@ -89,6 +87,13 @@
 (secretary/defroute "/logout" []
   (when @(rf/subscribe [:user-logged-in])
     (rf/dispatch [:logout])))
+
+(secretary/defroute "/messages" []
+  (rf/dispatch [:set-active-panel :messages]))
+
+(secretary/defroute "/home" []
+  (rf/dispatch [:set-active-panel :home]))
+
 
 ;; -------------------------
 ;; History

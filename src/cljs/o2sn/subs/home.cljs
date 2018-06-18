@@ -1,6 +1,5 @@
 (ns o2sn.subs.home
-  (:require [o2sn.db :as db]
-            [re-frame.core :refer [reg-sub]]
+  (:require [re-frame.core :refer [reg-sub]]
             [o2sn.helpers.stories :refer [get-story
                                           get-current-story]]))
 

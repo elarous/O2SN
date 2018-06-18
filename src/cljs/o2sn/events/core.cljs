@@ -1,11 +1,11 @@
 (ns o2sn.events.core
-  (:require [o2sn.db :as db]
-            [re-frame.core :refer [reg-event-fx
+  (:require [re-frame.core :refer [reg-event-fx
                                    reg-event-db
                                    reg-fx
                                    debug]]
             [day8.re-frame.http-fx]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [o2sn.db :as db]))
 
 (reg-event-db
  :initialize-db
@@ -25,6 +25,20 @@
    (-> db
        (assoc-in [:page :active] page)
        (assoc-in [:page :hiding?] false))))
+
+(reg-event-fx
+ :set-active-panel
+ (fn [{db :db} [_ panel]]
+   {:db (assoc-in db [:panel :hiding?] true)
+    :dispatch-later [{:ms (get-in db [:panel :duration])
+                      :dispatch [:set-panel panel]}]}))
+
+(reg-event-db
+ :set-panel
+ (fn [db [_ panel]]
+   (-> db
+       (assoc-in [:panel :active] panel)
+       (assoc-in [:panel :hiding?] false))))
 
 ;;;;
 

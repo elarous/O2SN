@@ -1,9 +1,27 @@
-(ns o2sn.db)
+(ns o2sn.db
+  (:require [o2sn.views.home :as home]
+            [o2sn.views.login :as login]
+            [o2sn.views.signup :as signup]))
 
 (def default-db
   {:page {:active :home
           :duration 500
           :hiding? false}
+   :pages {:home {:with-menu? true
+                  :require-login? true
+                  :page #'home/home-page}
+           :login {:with-menu? false
+                   :require-login? false
+                   :page #'login/login-form}
+           :signup {:with-menu? false
+                    :require-login? false
+                    :page #'signup/signup-form}}
+   :panel {:active :home
+           :duration 500
+           :hiding? false}
+   :panels {:home #'home/home-main
+            :messages #'home/messages-panel}
+
    :sidebar {:visible true}
    :user {:logged-in? false
           :current nil}

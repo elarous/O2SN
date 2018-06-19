@@ -1,6 +1,12 @@
 (ns o2sn.subs.core
   (:require [re-frame.core :refer [reg-sub]]))
 
+
+(reg-sub
+ :checking-auth?
+ (fn [db _]
+   (:checking-auth? db)))
+
 (reg-sub
  :active-page
  (fn [db _]

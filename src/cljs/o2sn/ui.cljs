@@ -27,6 +27,8 @@
 (def image                 (r/adapt-react-class (component "Image")))
 (def segment               (r/adapt-react-class (component "Segment")))
 (def message               (r/adapt-react-class (component "Message")))
+(def message-content       (r/adapt-react-class (component "Message" "Content")))
+(def message-header        (r/adapt-react-class (component "Message" "Header")))
 (def form                  (r/adapt-react-class (component "Form")))
 (def form-input            (r/adapt-react-class (component "Form" "Input")))
 (def form-field            (r/adapt-react-class (component "Form" "Field")))
@@ -63,6 +65,9 @@
 (def list-item             (r/adapt-react-class (component "List" "Item")))
 (def list-content          (r/adapt-react-class (component "List" "Content")))
 (def list-header           (r/adapt-react-class (component "List" "Header")))
+
+(def dimmer                (r/adapt-react-class (component "Dimmer")))
+(def loader                (r/adapt-react-class (component "Loader")))
 
 
 ;; motions

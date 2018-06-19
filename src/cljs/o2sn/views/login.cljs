@@ -69,36 +69,52 @@
                                      (-> % .-target .-value)]))}]]))
 
 (defn login-form []
-  (let [form-errors? @(rf/subscribe [:login-errors?])]
-    [:div.login-form
-     [ui/grid {:text-align "center"
-               :style {:height "100%"}
-               :vertical-align "middle"}
-      [ui/grid-column {:style {:max-width 450}}
-       [ui/header {:as "h2" :text-align "center" :color "teal"}
-        "Log to your account"]
-       [ui/form {:size "large"
-                 :error form-errors?}
-        [ui/segment {:stacked true}
-         [login-username]
-         [login-password]
-         [ui/button
-          {:color (if (and @(rf/subscribe [:login-button-enabled?])
-                           (not form-errors?))
-                    "teal" "red")
-           :fluid true
-           :disabled (not @(rf/subscribe [:login-button-enabled?]))
-           :size "large"
-           :loading @(rf/subscribe [:login-processing?])
-           :on-click #(rf/dispatch [:login])}
-          "Login"]]
-        [ui/transition {:visible @(rf/subscribe [:login-errors?])
-                        :animation "scale"
-                        :duration 500}
-         [ui/message {:error true
-                      :header "Bad Credentials"
-                      :content "Make sure you entered the correct username and password"}]]]
-       [ui/message "New to us? "
-        [:a {:href "/#/signup"} "Sign Up"]]]]]))
+  (if @(rf/subscribe [:checking-auth?])
+    [:div.login-msg
+     [ui/message {:icon true
+                  :info true}
+      [ui/icon {:name "circle notched" :loading true}]
+      [ui/message-content
+       [ui/message-header "Please Wait"]
+       "Checking authentication"]]]
+    (if-not @(rf/subscribe [:user-logged-in])
+      (let [form-errors? @(rf/subscribe [:login-errors?])]
+        [:div.login-form
+         [ui/grid {:text-align "center"
+                   :style {:height "100%"}
+                   :vertical-align "middle"}
+          [ui/grid-column {:style {:max-width 450}}
+           [ui/header {:as "h2" :text-align "center" :color "teal"}
+            "Log to your account"]
+           [ui/form {:size "large"
+                     :error form-errors?}
+            [ui/segment {:stacked true}
+             [login-username]
+             [login-password]
+             [ui/button
+              {:color (if (and @(rf/subscribe [:login-button-enabled?])
+                               (not form-errors?))
+                        "teal" "red")
+               :fluid true
+               :disabled (not @(rf/subscribe [:login-button-enabled?]))
+               :size "large"
+               :loading @(rf/subscribe [:login-processing?])
+               :on-click #(rf/dispatch [:login])}
+              "Login"]]
+            [ui/transition {:visible @(rf/subscribe [:login-errors?])
+                            :animation "scale"
+                            :duration 500}
+             [ui/message {:error true
+                          :header "Bad Credentials"
+                          :content "Make sure you entered the correct username and password"}]]]
+           [ui/message "New to us? "
+            [:a {:href "/#/signup"} "Sign Up"]]]]])
+      [:div.login-msg
+       [ui/message {:icon true
+                    :success true}
+        [ui/icon {:name "check"}]
+        [ui/message-content
+         [ui/message-header "Success"]
+         "You are now logged in."]]])))
 
 

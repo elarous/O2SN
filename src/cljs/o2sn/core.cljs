@@ -28,6 +28,8 @@
                                   :link true}]])}
    [:button "click here"]])
 
+
+
 (defn page-trans [page]
   [ui/transition {:visible (not @(rf/subscribe [:page-hiding?]))
                   :animation "scale"
@@ -68,9 +70,6 @@
 
 (secretary/defroute "/" []
   (wrap-auth :home))
-
-(secretary/defroute "/welcome" []
-  (wrap-auth :welcome))
 
 #_(secretary/defroute "/story/new" []
   (require-login :new-story))

@@ -4,7 +4,8 @@
             [o2sn.views.signup :as signup]))
 
 (def default-db
-  {:page {:active :home
+  {:checking-auth? false
+   :page {:active :login
           :duration 500
           :hiding? false}
    :pages {:home {:with-menu? true
@@ -25,8 +26,6 @@
    :sidebar {:visible true}
    :user {:logged-in? false
           :current nil}
-   :welcome {:form :login-form
-             :animation-completed? true}
    :user-channels {:selected nil
                    :all []}
    :stories []

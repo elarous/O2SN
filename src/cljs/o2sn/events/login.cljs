@@ -64,11 +64,11 @@
 (reg-event-fx
  :login-success
  (fn [{db :db} [_ resp]]
-   (js/console.log resp)
    {:db (-> (assoc-in db [:user :logged-in?] true)
             (assoc-in [:user :current] resp)
             (assoc-in [:login-form :errors?] false)
-            (assoc-in [:login-form :processing?] false))
+            (assoc-in [:login-form :processing?] false)
+            (assoc :checking-auth? false))
     :dispatch [:set-active-page :home]}))
 
 (reg-event-db
@@ -76,7 +76,8 @@
  (fn [db [_ errors? resp]]
    (-> (assoc-in db [:user :logged-in?] false)
        (assoc-in [:login-form :errors?] errors?)
-       (assoc-in [:login-form :processing?] false))))
+       (assoc-in [:login-form :processing?] false)
+       (assoc :checking-auth? false))))
 
 ;; login form events
 (reg-event-db

@@ -55,4 +55,5 @@
                  :format (ajax/text-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success [:login-success]
-                 :on-failure [:login-fail false]}}))
+                 :on-failure [:login-fail false]}
+    :db (assoc db :checking-auth? true)}))

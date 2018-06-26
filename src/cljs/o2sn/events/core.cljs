@@ -13,6 +13,28 @@
    db/default-db))
 
 (reg-event-fx
+ :get-categories
+ (fn [{db :db} _]
+   {:http-xhrio {:method :get
+                 :uri "/categories/all"
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success [:get-categories-success]
+                 :on-failure [:get-categories-failure]}}))
+
+(reg-event-db
+ :get-categories-success
+ (fn [db [_ results]]
+   (assoc db :categories results)))
+
+(reg-event-db
+ :get-categories-failure
+ (fn [db resp]
+   (js/alert (str "Could not fetch categories : " resp))
+   db))
+
+;;
+
+(reg-event-fx
  :set-active-page
  (fn [{db :db} [_ page]]
    {:db (assoc-in db [:page :hiding?] true)

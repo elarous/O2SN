@@ -62,7 +62,7 @@
                 let dislikes = (for dis in 1..1 inbound s._id disliking
                                return dis)
 
-                return merge(s,
+                return distinct merge(s,
                     {location : l,
                         category : cat,
                         truth : truth,
@@ -156,7 +156,6 @@
                  return l"]
     (db/query! q-str {:user_id user-id :story_id story-id})))
 
-
 (defn unmark-truth! [story-k user-k]
   (let [story-id (str "stories/" story-k)
         user-id (str "users/" user-k)
@@ -205,22 +204,15 @@
             :new
             db/ednize)))))
 
-#_(mark-truth! 1 1)
-#_(marked-truth? 1 1)
-#_(marked-lie? 1 1)
-#_(unmark-truth! 1 1)
-#_(mark-lie! 1 1)
-#_(unmark-lie! 1 1)
-#_(all)
-#_(owner "1")
-#_(saying-truth "1")
-#_(saying-lie "1")
-#_(by-user 2)
-#_(time (by-channel 2))
-#_(count (by-channel 1))
-#_(liked-by? 1 1)
-#_(disliked-by? 1 1)
-#_(add-like! 1 1)
-#_(remove-like! 1 1)
-#_(add-dislike! 1 1)
-#_(remove-dislike! 1 1)
+(defn create-story [story-data]
+  (db/with-coll :stories
+    (-> (db/insert-doc! story-data
+                        {:return-new true}
+                        [:new])
+        :new
+        db/ednize)))
+
+(defn set-owner [story-k user-k]
+  (db/with-coll :own
+    (db/insert-doc! {:_from (str "users/" user-k)
+                     :_to (str "stories/" story-k)})))

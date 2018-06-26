@@ -58,3 +58,25 @@ body > #app > div > div > div.signup-form {
 #news-card {
     margin : 15px;
 }
+
+.new-story-panel {
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
+.new-story-images {
+    display: flex;
+    flex-flow : row wrap;
+    justify-content: space-around;
+}
+
+.new-story-images img{
+    height: 140px;
+    width : 140px;
+    margin-left: 5px;
+    margin-bottom : 5px;
+}
+
+#new-story-add-img-input {
+    display : none;
+}

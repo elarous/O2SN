@@ -1,7 +1,8 @@
 (ns o2sn.db
   (:require [o2sn.views.home :as home]
             [o2sn.views.login :as login]
-            [o2sn.views.signup :as signup]))
+            [o2sn.views.signup :as signup]
+            [o2sn.views.new-story :as new-story]))
 
 (def default-db
   {:checking-auth? false
@@ -21,7 +22,8 @@
            :duration 500
            :hiding? false}
    :panels {:home #'home/home-main
-            :messages #'home/messages-panel}
+            :messages #'home/messages-panel
+            :new-story #'new-story/new-story-panel}
 
    :sidebar {:visible true}
    :user {:logged-in? false
@@ -74,4 +76,17 @@
                  :error {:header "Error header"
                          :msg "Error message"}
                  :processing? false
-                 :signed-up? false}})
+                 :signed-up? false}
+   :new-story {:title ""
+               :map {:lat 0
+                     :lng 0}
+               :description ""
+               :images []
+               :category ""
+               :datetime {:date ""
+                          :time ""}
+               :errors []
+               :phase :editing ;; editing or saving
+               :saving {:progress 0
+                        :state :progress ;; error success or progress
+                        :message ""}}})

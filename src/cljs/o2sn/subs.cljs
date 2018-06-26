@@ -3,4 +3,5 @@
             o2sn.subs.home
             o2sn.subs.top-menu
             o2sn.subs.login
-            o2sn.subs.signup))
+            o2sn.subs.signup
+            o2sn.subs.new-story))

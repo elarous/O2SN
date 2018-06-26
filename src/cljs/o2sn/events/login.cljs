@@ -46,7 +46,10 @@
                   (first args) ;; the password
                   #(dispatch [:repassword-valid])
                   #(dispatch [:repassword-not-valid %]))
-     (js/alert (str "target :  " target " value : " value)))))
+     :new-story (v/validate-new-story
+                 value
+                 #(dispatch [:new-story/data-valid])
+                 #(dispatch [:new-story/data-not-valid %])))))
 
 (reg-event-fx
  :login

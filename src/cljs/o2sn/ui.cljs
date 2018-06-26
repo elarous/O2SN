@@ -13,6 +13,7 @@
     (apply goog.object/getValueByKeys sm k ks)
     (goog.object/get sm k)))
 
+(def container             (r/adapt-react-class (component "Container")))
 (def button                (r/adapt-react-class (component "Button")))
 (def button-content        (r/adapt-react-class (component "Button" "Content")))
 (def icon                  (r/adapt-react-class (component "Icon")))
@@ -24,7 +25,10 @@
 (def grid                  (r/adapt-react-class (component "Grid")))
 (def grid-column           (r/adapt-react-class (component "Grid" "Column")))
 (def header                (r/adapt-react-class (component "Header")))
+(def header-content        (r/adapt-react-class (component "Header" "Content")))
+(def header-subheader      (r/adapt-react-class (component "Header" "Subheader")))
 (def image                 (r/adapt-react-class (component "Image")))
+(def image-group           (r/adapt-react-class (component "Image" "Group")))
 (def segment               (r/adapt-react-class (component "Segment")))
 (def message               (r/adapt-react-class (component "Message")))
 (def message-content       (r/adapt-react-class (component "Message" "Content")))
@@ -65,9 +69,12 @@
 (def list-item             (r/adapt-react-class (component "List" "Item")))
 (def list-content          (r/adapt-react-class (component "List" "Content")))
 (def list-header           (r/adapt-react-class (component "List" "Header")))
+(def divider               (r/adapt-react-class (component "Divider")))
+(def progress              (r/adapt-react-class (component "Progress")))
 
 (def dimmer                (r/adapt-react-class (component "Dimmer")))
 (def loader                (r/adapt-react-class (component "Loader")))
+(def select                (r/adapt-react-class (component "Select")))
 
 
 ;; motions

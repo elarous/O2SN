@@ -1,13 +1,16 @@
 (ns o2sn.routes.services
   (:require [ring.util.http-response :refer :all]
             [compojure.api.sweet :refer :all]
+            [compojure.api.upload :refer [TempFileUpload
+                                          wrap-multipart-params]]
             [schema.core :as s]
             [compojure.api.meta :refer [restructure-param]]
             [buddy.auth.accessrules :refer [restrict success error]]
             [buddy.auth :refer [authenticated?]]
             [o2sn.services.users :as users]
             [o2sn.services.channels :as channels]
-            [o2sn.services.stories :as stories]))
+            [o2sn.services.stories :as stories]
+            [o2sn.services.categories :as categories]))
 
 (defn access-error [_ _]
   (unauthorized {:error "unauthorized"}))
@@ -84,6 +87,11 @@
       :summary "get all the current's user channels"
       (channels/get-channels (:identity req))))
 
+  (context "/categories" []
+    (GET "/all" req
+      :summary "get all categories"
+      (categories/get-all)))
+
   (context "/stories" []
     (GET "/user/:user-key" []
       :auth-rules authenticated?
@@ -155,7 +163,29 @@
       :auth-rules authenticated?
       :path-params [story-key :- String]
       :summary "unmark a story if it's already marked as lie"
-      (stories/unmark-lie story-key (:identity req))))
+      (stories/unmark-lie story-key (:identity req)))
+
+    (POST "/story/new" req
+      :auth-rules authenticated?
+      :multipart-params [title :- String
+                         lat :- Double
+                         lng :- Double
+                         description :- String
+                         images :- s/Any
+                         category :- String
+                         date :- String
+                         time :- String]
+      :middleware [wrap-multipart-params]
+      :summary "create a new story by the current user"
+      (stories/new-story {:title title
+                          :mapcords {:lat lat :lng lng}
+                          :description description
+                          :images (cond (vector? images) images
+                                        (= "null" images) nil
+                                        :else (vector images))
+                          :category category
+                          :datetime {:date date :time time}
+                          :user (:identity req)})))
 
   (context "/api" []
     :tags ["thingie"]

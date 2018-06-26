@@ -59,6 +59,64 @@
 
 (def signup-form-schema (merge email-schema username-schema password-schema repassword-schema))
 
+;; new story schemas
+(def title-schema
+  {:title [st/required
+           [st/min-count 20 :message "must be at least 20 characters"]
+           [st/max-count 80 :message "must be at most 80 characters"]]})
+
+(def map-lat-schema
+  {:lat [{:message "a point should be selected"
+          :optional false
+          :validate (complement zero?)}]})
+
+(def map-lng-schema
+  {:lng [{:message "a point should be selected"
+          :optional false
+          :validate (complement zero?)}]})
+
+(def description-schema
+  {:description  [st/required
+                  [st/min-count 80 :message "must be at least 80 characters"]
+                  [st/max-count 400 :message "must be at most 400 characters"]]})
+
+(def date-schema
+  {:date [{:message "invalid date format"
+           :optional false
+           :validate #(re-matches #"^\d{4}-\d{2}-\d{2}$" %)}]})
+
+(def time-schema
+  {:time [{:message "invalid time format"
+           :optional false
+           :validate #(re-matches #"^\d{2}:\d{2}$" %)}]})
+
+(def category-schema
+  {:category [st/required]})
+
+(defn validate-map [{:keys [lat lng]}]
+  (let [lat-val (st/validate {:lat lat} map-lat-schema)
+        lng-val (st/validate {:lng lng} map-lng-schema)]
+    (if (and (nil? (first lat-val))
+             (nil? (first lng-val)))
+      [nil]
+      [{:map "a point should be selected"}])))
+
+
+(defn validate-new-story [data on-valid on-invalid]
+  (let [title (st/validate {:title (:title data)} title-schema)
+        map-latlng (validate-map (:map data))
+        description (st/validate {:description (:description data)} description-schema)
+        date (st/validate {:date (get-in data [:datetime :date])} date-schema)
+        time (st/validate {:time (get-in data [:datetime :time])} time-schema)
+        category (st/validate {:category (:category data)} category-schema)
+        valid (every? #(nil? (first %))
+                      [title map-latlng description date time category])]
+    (if valid
+      (on-valid)
+      (on-invalid
+       (filter some?
+               (map first [title map-latlng description date time category]))))))
+
 ;; validations that requires some ajax requests
 
 (defn email-deliverable? [email success-fn failure-fn]

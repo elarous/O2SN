@@ -5,12 +5,8 @@
 
 ;; helper functions
 
-(defn format-date [date]
-  (str (:day date) "/" (:month date) "/" (:year date)
-       " "
-       (if (< (:hour date) 10) (str "0" (:hour date)) (:hour date))
-       ":"
-       (if (< (:minute date) 10) (str "0" (:minute date)) (:minute date))))
+(defn format-date [datetime]
+  (str (:date datetime) " " (:time datetime)))
 
 
 ;; story details modal
@@ -30,8 +26,7 @@
                          :color "grey"}
                "Not Marked"])]
      (:title story)
-     [ui/label {:color @(rf/subscribe [:category-color
-                                       (get-in story [:category :name])])}
+     [ui/label {:color (get-in story [:category :color])}
       (get-in story [:category :name])]]))
 
 (defn card-modal-imgs [story]
@@ -53,7 +48,7 @@
               :size "big"
               :on-click #(rf/dispatch [:next-story-modal-img])}]]])
 
-(defn wrapped-map [{:keys [long lat]}]
+(defn wrapped-map [{:keys [lng lat]}]
   (let [map-class
         (r/adapt-react-class
          (ui/with-scriptjs
@@ -62,8 +57,8 @@
                (r/create-element
                 ui/google-map
                 #js {:defaultZoom 10
-                     :defaultCenter #js {:lat lat, :lng long}}
-                (r/as-element [ui/marker {:position {:lat lat :lng long}}]))))))]
+                     :defaultCenter #js {:lat lat, :lng lng}}
+                (r/as-element [ui/marker {:position {:lat lat :lng lng}}]))))))]
     [map-class
      {:container-element (r/as-element [:div {:style {:height "400px"}}])
       :map-element (r/as-element [:div {:style {:height "100%"}}])
@@ -76,7 +71,7 @@
    [ui/grid-column {:width 14
                     :text-align "center"}
     [:div#map
-     [wrapped-map {:long (get-in story [:location :long])
+     [wrapped-map {:lng (get-in story [:location :lng])
                    :lat (get-in story [:location :lat])}]]]
    [ui/grid-column {:width 1}]])
 
@@ -86,7 +81,7 @@
               :color "teal"
               :size "small"}
    [ui/icon {:name "calendar"}]
-   (format-date (:date story))])
+   (format-date (:datetime story))])
 
 (defn card-modal-location [story]
   (if-not @(rf/subscribe [:story-map-visible?])
@@ -219,8 +214,7 @@
 
 (defn news-card [story]
   [:div#news-card
-   [ui/card {:color @(rf/subscribe [:category-color
-                                    (get-in story [:category :name])])}
+   [ui/card {:color (get-in story [:category :color])}
     [ui/card-content
      [ui/label {:corner "right"
                 :as "a"
@@ -230,16 +224,15 @@
                  [ui/icon {:name "content"
                            :link true}])}]
      [ui/label {:ribbon true
-                :color @(rf/subscribe [:category-color
-                                      (get-in story [:category :name])])}
+                :color (get-in story [:category :color])}
       (get-in story [:category :name])]
      [ui/card-header (:title story)]
      [ui/card-meta
       [ui/grid {:columns 16}
        [ui/grid-column {:width 7}
         [:span {:style {:font-size ".7rem"}}
-         (format-date (:date story))]]
-       [ui/grid-column {:width 7}
+         (format-date (:datetime story))]]
+       #_[ui/grid-column {:width 7}
         [:span {:style {:font-size ".7rem"}} (get-in story [:location :name])]]]]
      [ui/card-description (:description story)]]
     [ui/card-content {:extra true}

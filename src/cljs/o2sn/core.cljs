@@ -71,8 +71,8 @@
 (secretary/defroute "/" []
   (wrap-auth :home))
 
-#_(secretary/defroute "/story/new" []
-  (require-login :new-story))
+(secretary/defroute "/story/new" []
+  (rf/dispatch [:set-active-panel :new-story]))
 
 (secretary/defroute "/login" []
   (wrap-auth :login))
@@ -92,6 +92,7 @@
 
 (secretary/defroute "/home" []
   (rf/dispatch [:set-active-panel :home]))
+
 
 
 ;; -------------------------
@@ -117,6 +118,7 @@
 (defn init! []
   (rf/dispatch-sync [:initialize-db])
   (rf/dispatch-sync [:check-authenticated])
+  (rf/dispatch-sync [:get-categories])
   (load-interceptors!)
   (fetch-docs!)
   (hook-browser-navigation!)

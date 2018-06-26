@@ -48,7 +48,7 @@
   (if-let [existing-loc (get-loc loc)]
     existing-loc
     (db/with-coll :locations
-      (-> (db/insert-doc! (-> (select-keys loc [:name :type])
+      (-> (db/insert-doc! (-> (select-keys loc [:name :type :lng :lat])
                               (update :type name))
                           {:return-new true}
                           [:new])
@@ -73,4 +73,7 @@
        (when (some? (:contains l))
          (insert-locs! (:contains l) inserted-loc))))))
 
-
+;; should be sorted from parent locations to children
+(defn insert-locs-seq! [locs]
+  (->> (map insert-loc-v! locs)
+       (reduce (fn [p c] (insert-loc-e! p c) c))))

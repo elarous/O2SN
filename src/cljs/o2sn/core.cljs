@@ -97,6 +97,10 @@
 (secretary/defroute "/channels" []
   (rf/dispatch [:set-active-panel :channels]))
 
+(secretary/defroute "/channel/add" []
+  (do (rf/dispatch [:set-active-panel :channels])
+      (rf/dispatch [:channels/switch-named-tab :add])))
+
 
 ;; -------------------------
 ;; History

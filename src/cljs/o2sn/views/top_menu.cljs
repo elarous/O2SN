@@ -54,16 +54,24 @@
                     :content "my second message"}]]])
 
 (defn top-menu-add []
-  [ui/dropdown
-   {:icon false
-    :pointing "top right"
-    :trigger (r/as-element
-              [ui/icon {:name  "plus"
-                        :size "large"}])}
-   [ui/dropdown-menu
-    [ui/dropdown-item {:icon "file"
-                       :text "New Story"
-                       :on-click #(secretary/dispatch! "#/story/new")}]]])
+  [ui/popup {:hoverable true
+             :position "bottom right"
+             :style {:height "auto"}
+             :trigger (r/as-element
+                       [:span.menu-action
+                        [ui/icon {:name "plus"
+                                  :size "large"
+                                  :link true}]])}
+   [ui/menu {:compact true
+             :icon "labeled"}
+    [ui/menu-item {:name "new-story"
+                   :on-click #(secretary/dispatch! "/story/new")}
+     [ui/icon {:name "file"}]
+     "New Story"]
+    [ui/menu-item {:name "new-channel"
+                   :on-click #(secretary/dispatch! "/channel/add")}
+     [ui/icon {:name "tv"}]
+     "New Channel"]]])
 
 
 (defn top-menu-actions []

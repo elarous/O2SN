@@ -2,7 +2,9 @@
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
             [secretary.core :as secretary]
-            [o2sn.ui :as ui]))
+            [o2sn.ui :as ui]
+            [o2sn.views.maps :as m]
+            [o2sn.views.operation :as op]))
 
 (defn title []
   [ui/input {:type "text"
@@ -12,37 +14,12 @@
              :value @(rf/subscribe [:new-story/title])
              :on-change #(rf/dispatch [:new-story/set-title (-> % .-target .-value)])}])
 
-(defn- extract-lat-lng [e]
-  (hash-map :lat (apply (-> e .-latLng .-lat) [])
-            :lng (apply (-> e .-latLng .-lng) [])))
-
-(defn- wrapped-map []
-  (let [lat @(rf/subscribe [:new-story/marker-lat])
-        lng @(rf/subscribe [:new-story/marker-lng])
-        map-class
-        (r/adapt-react-class
-         (ui/with-scriptjs
-           (ui/with-google-map
-             (fn [p]
-               (r/create-element
-                ui/google-map
-                #js {:defaultZoom 10
-                     :defaultCenter #js {:lat lat, :lng lng}
-                     :onClick #(rf/dispatch [:new-story/move-marker (extract-lat-lng %)])}
-                (r/as-element
-                 [ui/marker
-                  {:position
-                   {:lat lat
-                    :lng lng}}]))))))]
-    [map-class
-     {:container-element (r/as-element [:div {:style {:height "400px"}}])
-      :map-element (r/as-element [:div {:style {:height "100%"}}])
-      :google-map-URL "https://maps.googleapis.com/maps/api/js?key=AIzaSyBUGwGf5iRDVzcJ-22B-JhzpTrCA2FMW1o&v=3.exp&libraries=geometry,drawing,places"
-      :loading-element (r/as-element [:div {:style {:height "100%"}}])}]))
-
 (defn location-map []
   [:div#map
-   [wrapped-map]])
+   [m/wrapped-map {:lat @(rf/subscribe [:new-story/marker-lat])
+                   :lng @(rf/subscribe [:new-story/marker-lng])
+                   :on-click #(rf/dispatch [:new-story/move-marker
+                                            (m/extract-lat-lng %)])}]])
 
 (defn description []
   [ui/form
@@ -150,44 +127,20 @@
    [ui/grid-column {:width "1"}]])
 
 (defn saving-segment []
-  (let [state @(rf/subscribe [:new-story/saving-state])]
-    [ui/segment
-     [ui/header {:as "h2"
-                 :color (cond (= state :success) "green"
-                              (= state :error) "red"
-                              :else "black")
-                 :text-align "left"}
-      [ui/icon {:name (cond (= state :success) "check"
-                            (= state :error) "x"
-                            :else "world")}]
-      [ui/header-content
-       "Publish A Story"
-       [ui/header-subheader
-        (cond (= state :success) "Your Story Has Been Published"
-              (= state :error) "Something Went Wrong !"
-              :else "Please Wait ...")]]]
-     [ui/divider {:hidden true}]
-     [ui/progress {:success (= state :success)
-                   :error (= state :error)
-                   :percent @(rf/subscribe [:new-story/progress])}
-      (cond (= state :success) "success"
-            (= state :error) "error"
-            :else  "publishing your story")]
-     (when (or (= state :success) (= state :error))
-       [ui/message {:success (= state :success)
-                    :error (= state :error)}
-        [ui/container {:text-align "center"}
-         (if (= state :success)
-           [ui/button {:color "green"
-                       :on-click #(do (secretary/dispatch! "/home")
-                                      (rf/dispatch [:new-story/reset]))}
-            "Back to home page"]
-           [:div
-            @(rf/subscribe [:new-story/saving-msg])
-            [ui/divider {:hidden true}]
-            [ui/button {:color "red"
-                        :on-click #(rf/dispatch [:new-story/set-phase :editing])}
-             "Back"]])]])]))
+  (op/operation-segment
+   {:state @(rf/subscribe [:new-story/saving-state])
+    :title "Publish A Story"
+    :progress  @(rf/subscribe [:new-story/progress])
+    :sub-title "Publishing your story"
+    :m-success {:sub-title "Your Story Has Been Published"
+                :on-click #(do (secretary/dispatch! "/home")
+                               (rf/dispatch [:new-story/reset]))
+                :btn-txt "Back To Home"
+                :done-msg "Your story is now public and everyone can rate it and interact with it."}
+    :m-error {:sub-title "Something Went Wrong !"
+              :on-click #(rf/dispatch [:new-story/set-phase :editing])
+              :btn-txt "Back"
+              :done-msg @(rf/subscribe [:new-story/saving-msg])}}))
 
 (defn editing-segment []
   [:div

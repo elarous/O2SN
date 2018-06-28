@@ -85,7 +85,19 @@
     (GET "/user/current" req
       :auth-rules authenticated?
       :summary "get all the current's user channels"
-      (channels/get-channels (:identity req))))
+      (channels/get-channels (:identity req)))
+
+    (POST "/add" req
+      :auth-rules authenticated?
+      :body-params [locations :- [s/Any]]
+      :summary "add a channel for the current user"
+      (channels/add-channel locations (:identity req)))
+
+    (POST "/unsubscribe" req
+      :auth-rules authenticated?
+      :body-params [chan-k :- s/Str]
+      :summary "user channel unsubscribe "
+      (channels/unsubscribe (:identity req) chan-k)))
 
   (context "/categories" []
     (GET "/all" req

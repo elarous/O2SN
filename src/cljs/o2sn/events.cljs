@@ -5,4 +5,5 @@
             o2sn.events.login
             o2sn.events.logout
             o2sn.events.signup
-            o2sn.events.new-story))
+            o2sn.events.new-story
+            o2sn.events.channels))

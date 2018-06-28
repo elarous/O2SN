@@ -8,7 +8,8 @@
             [ajax.core :as ajax]
             [clojure.data.json :as json]
             [o2sn.db.core :refer [ednize]]
-            [o2sn.db.locations :as locations])
+            [o2sn.db.locations :as locations]
+            [o2sn.maps :as m])
   (:import java.time.Instant))
 
 (defn by-user [user-key]
@@ -51,7 +52,7 @@
   (ok (db/unmark-lie! story-k user-k)))
 
 (defn- generate-filename! [filename]
-  (let [ext (last (s/split filename #"\." ))
+  (let [ext (last (s/split filename #"\."))
         p1 (-> (Instant/now)
                .getEpochSecond
                str
@@ -67,58 +68,27 @@
   (io/copy file
            (io/file (str "resources/public/img/" filename))))
 
-(defn- make-url [{:keys [lat lng]}]
-  (str "https://maps.googleapis.com/maps/api/geocode/json?latlng="
-       lat "," lng
-       "&key=AIzaSyBUGwGf5iRDVzcJ-22B-JhzpTrCA2FMW1o"
-       "&result_type=country%7Cadministrative_area_level_1"
-       "%7Cadministrative_area_level_2%7Clocality"))
-
-(defn- get-locations [{:keys [lat lng]}]
-  (let [url (make-url {:lat lat :lng lng})
-        data (promise)
-        _ (ajax/GET url
-                    {:handler #(deliver data %)})
-        addr-compts (-> @data
-                        (get "results")
-                        first
-                        (get "address_components"))
-        with-names (map #(hash-map :name (get % "long_name")
-                                   :type (if (vector? (get % "types"))
-                                           (first (get % "types"))
-                                           (get % "types")))
-                        addr-compts)
-        shorter-types (map (fn [m]
-                             (update m :type
-                                     #(cond (= "administrative_area_level_1" %)
-                                            "admin-lvl-1"
-                                            (= "administrative_area_level_2" %)
-                                            "admin-lvl-2"
-                                            :else %)))
-                           with-names)
-        filtered-locs (filter
-                       #(#{"country" "admin-lvl-1" "admin-lvl-2" "locality"}
-                         (:type %)) shorter-types)]
-    filtered-locs))
-
-
 (defn new-story [{:keys [title mapcords description
                          images category datetime
                          user] :as m}]
   (let [imgs (when (some? images)
                (map #(update % :filename generate-filename!) images))
-        location (-> mapcords
-                     get-locations
-                     (conj {:lat (:lat mapcords)
-                            :lng (:lng mapcords)
-                            :type "point"
-                            :name (str "point_" (:lat mapcords) "_" (:lng mapcords))})
-                     reverse
-                     locations/insert-locs-seq!)
+        location (promise)
+        _ (m/get-locations
+           mapcords
+           (fn [data]
+             (deliver location
+                      (-> data
+                          (conj {:lat (:lat mapcords)
+                                 :lng (:lng mapcords)
+                                 :type "point"
+                                 :name (str "point_" (:lat mapcords) "_" (:lng mapcords))})
+                          reverse
+                          locations/insert-locs-seq!))))
         story (db/create-story {:title title
                                 :datetime datetime
                                 :category (str "categories/" category)
-                                :location (:_id location)
+                                :location (:_id @location)
                                 :description description
                                 :images (if (some? imgs)
                                           (map :filename imgs)

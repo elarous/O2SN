@@ -9,30 +9,11 @@
                                           get-current-story]]))
 
 ;; helper functions
-(reg-event-fx
- :load-user-channels
- (fn [{db :db} _]
-   {:http-xhrio {:method :get
-                 :uri "/channels/user/current"
-                 :format (ajax/text-request-format)
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success [:load-user-channels-success]
-                 :on-failure [:load-user-channels-fail]}}))
-
-(reg-event-db
- :load-user-channels-success
- (fn [db [_ resp]]
-   (assoc-in db [:user-channels :all] resp)))
-
-(reg-event-db
- :load-user-channels-fail
- (fn [db [_ resp]]
-   (assoc-in db [:user-channels :all] [])))
 
 (reg-event-fx
  :set-selected-user-chan
  (fn [{db :db} [_ k]]
-   {:db (assoc-in db [:user-channels :selected] k)
+   {:db (assoc db :selected-channel k)
     :dispatch [:load-stories k]}))
 
 (reg-event-fx

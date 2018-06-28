@@ -16,6 +16,8 @@
 (def container             (r/adapt-react-class (component "Container")))
 (def button                (r/adapt-react-class (component "Button")))
 (def button-content        (r/adapt-react-class (component "Button" "Content")))
+(def button-or             (r/adapt-react-class (component "Button" "Or")))
+(def button-group          (r/adapt-react-class (component "Button" "Group")))
 (def icon                  (r/adapt-react-class (component "Icon")))
 (def menu                  (r/adapt-react-class (component "Menu")))
 (def menu-menu             (r/adapt-react-class (component "Menu" "Menu")))
@@ -75,6 +77,7 @@
 (def dimmer                (r/adapt-react-class (component "Dimmer")))
 (def loader                (r/adapt-react-class (component "Loader")))
 (def select                (r/adapt-react-class (component "Select")))
+(def confirm               (r/adapt-react-class (component "Confirm")))
 
 
 ;; motions

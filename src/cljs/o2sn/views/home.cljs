@@ -1,13 +1,13 @@
 (ns o2sn.views.home
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
-            [o2sn.ui :as ui]))
+            [o2sn.ui :as ui]
+            [o2sn.views.maps :as m]))
 
 ;; helper functions
 
 (defn format-date [datetime]
   (str (:date datetime) " " (:time datetime)))
-
 
 ;; story details modal
 (defn card-modal-header [story]
@@ -30,40 +30,28 @@
       (get-in story [:category :name])]]))
 
 (defn card-modal-imgs [story]
-  [ui/grid
-   [ui/grid-column {:width 1
-                    :vertical-align "middle"}
-    [ui/icon {:name "chevron left"
-              :link true
-              :size "big"
-              :on-click #(rf/dispatch [:previous-story-modal-img])}]]
-   [ui/grid-column {:width 14
-                    :text-align "center"}
-    [ui/image {:src (str "img/" @(rf/subscribe [:story-modal-img]))
-               :style {:display "inline"}}]]
-   [ui/grid-column {:width 1
-                    :vertical-align "middle"}
-    [ui/icon {:name "chevron right"
-              :link true
-              :size "big"
-              :on-click #(rf/dispatch [:next-story-modal-img])}]]])
-
-(defn wrapped-map [{:keys [lng lat]}]
-  (let [map-class
-        (r/adapt-react-class
-         (ui/with-scriptjs
-           (ui/with-google-map
-             (fn [p]
-               (r/create-element
-                ui/google-map
-                #js {:defaultZoom 10
-                     :defaultCenter #js {:lat lat, :lng lng}}
-                (r/as-element [ui/marker {:position {:lat lat :lng lng}}]))))))]
-    [map-class
-     {:container-element (r/as-element [:div {:style {:height "400px"}}])
-      :map-element (r/as-element [:div {:style {:height "100%"}}])
-      :google-map-URL "https://maps.googleapis.com/maps/api/js?key=AIzaSyBUGwGf5iRDVzcJ-22B-JhzpTrCA2FMW1o&v=3.exp&libraries=geometry,drawing,places"
-      :loading-element (r/as-element [:div {:style {:height "100%"}}])}]))
+  (if (seq (:images story))
+    [ui/grid
+     [ui/grid-column {:width 1
+                      :vertical-align "middle"}
+      [ui/icon {:name "chevron left"
+                :link true
+                :size "big"
+                :on-click #(rf/dispatch [:previous-story-modal-img])}]]
+     [ui/grid-column {:width 14
+                      :text-align "center"}
+      [ui/image {:src (str "img/" @(rf/subscribe [:story-modal-img]))
+                 :style {:display "inline"}}]]
+     [ui/grid-column {:width 1
+                      :vertical-align "middle"}
+      [ui/icon {:name "chevron right"
+                :link true
+                :size "big"
+                :on-click #(rf/dispatch [:next-story-modal-img])}]]]
+    [ui/container {:text-align "center"}
+     [ui/header {:as "h3"
+                 :content "This Story Has No Images"
+                 :color "grey"}]]))
 
 (defn card-modal-map [story]
   [ui/grid
@@ -71,8 +59,9 @@
    [ui/grid-column {:width 14
                     :text-align "center"}
     [:div#map
-     [wrapped-map {:lng (get-in story [:location :lng])
-                   :lat (get-in story [:location :lat])}]]]
+     [m/wrapped-map {:lng (get-in story [:location :lng])
+                     :lat (get-in story [:location :lat])
+                     :on-click (fn [_] _)}]]]
    [ui/grid-column {:width 1}]])
 
 (defn card-modal-date [story]
@@ -210,8 +199,6 @@
           [ui/header {:as "h3"}
            (:username u)]]]])]]])
 
-
-
 (defn news-card [story]
   [:div#news-card
    [ui/card {:color (get-in story [:category :color])}
@@ -233,7 +220,7 @@
         [:span {:style {:font-size ".7rem"}}
          (format-date (:datetime story))]]
        #_[ui/grid-column {:width 7}
-        [:span {:style {:font-size ".7rem"}} (get-in story [:location :name])]]]]
+          [:span {:style {:font-size ".7rem"}} (get-in story [:location :name])]]]]
      [ui/card-description (:description story)]]
     [ui/card-content {:extra true}
      [ui/grid {:vertical-align "middle"
@@ -256,12 +243,20 @@
         (count (:dislikes story))]]]]]])
 
 (defn chan-contents []
-  [:div#news-cards
-   [card-likes-modal]
-   [card-modal @(rf/subscribe [:current-story])]
-   (for [story @(rf/subscribe [:stories])]
-     ^{:key (:_key story)}
-     [news-card story])])
+  [ui/segment {:style {:background-color "#FAFAFA"
+                       :height "100%"}}
+   [:div#news-cards
+    [card-likes-modal]
+    [card-modal @(rf/subscribe [:current-story])]
+    (let [stories @(rf/subscribe [:stories])]
+      (if (seq stories)
+        (for [story stories]
+          ^{:key (:_key story)}
+          [news-card story])
+        [ui/container {:text-align "center"}
+         [ui/header {:as "h4"
+                     :color "grey"
+                     :content "No channel selected or channel is empty !"}]]))]])
 
 (defn chan-select []
   [ui/dropdown
@@ -269,21 +264,46 @@
     :search true
     :selection true
     :fluid true
+    :value @(rf/subscribe [:selected-channel])
     :on-change (fn [_ data]
                  (rf/dispatch [:set-selected-user-chan
                                (-> data .-value)]))
-    :on-focus #(rf/dispatch [:load-user-channels])
-    :options (clj->js @(rf/subscribe [:user-channels]))}])
+    :on-focus #(rf/dispatch [:channels/load])
+    :options (clj->js
+              (map #(hash-map
+                     :key (:_key %)
+                     :value (:_key %)
+                     :text (:name %)
+                     :label (r/as-element
+                             [ui/label {:content (-> % :name first .toUpperCase)
+                                        :color
+                                        @(rf/subscribe [:channels/color-by-k
+                                                        (:_key %)])
+                                        :circular true}]))
+                   @(rf/subscribe [:channels/all])))}])
+
+(defn chan-selection []
+  (let [chan-k @(rf/subscribe [:selected-channel])
+        color @(rf/subscribe [:channels/color-by-k chan-k])]
+    [ui/segment {:color color
+                 :style {:width "75%"
+                         :margin "auto"}}
+     [ui/grid {:columns 16
+               :vertical-align "middle"
+               :text-align "center"}
+      [ui/grid-column {:width 1}]
+      [ui/grid-column {:width 4}
+       [ui/header {:as "h3"
+                   :color color}
+        [ui/icon {:name "podcast"}]
+        [ui/header-content "News Channel"]]]
+      [ui/grid-column {:width 10}
+       [chan-select]]
+      [ui/grid-column {:width 1}]]]))
 
 (defn home-main []
   [:div
-   [ui/grid {:columns 16
-             :vertical-align "middle"
-             :text-align "center"}
-    [ui/grid-column {:width 4}
-     [ui/header {:as "h3"} "News Channel : "]]
-    [ui/grid-column {:width 9}
-     [chan-select]]]
+   [chan-selection]
    [chan-contents]])
 
 (defn home-page []

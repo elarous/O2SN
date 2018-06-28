@@ -44,7 +44,8 @@
                   :duration 500
                   :transition-on-mount true
                   :mount-on-show true}
-   [:div [panel]]])
+   [:div {:style {:height "100%"}}
+    [panel]]])
 
 (defn add-menus [page]
   [:div.h100
@@ -93,6 +94,8 @@
 (secretary/defroute "/home" []
   (rf/dispatch [:set-active-panel :home]))
 
+(secretary/defroute "/channels" []
+  (rf/dispatch [:set-active-panel :channels]))
 
 
 ;; -------------------------

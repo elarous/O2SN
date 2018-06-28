@@ -6,12 +6,14 @@
 
 
 (defn menu-item [{:keys [panel label icon]}]
-  (let [active? @(rf/subscribe [:active-panel? panel])]
+  (let [active? @(rf/subscribe [:active-panel? panel])
+        load-event (keyword (name panel) "load")]
     [ui/menu-item {:name (name panel)
                    :link true
                    :active active?
                    :disabled active?
-                   :on-click #(secretary/dispatch! (str "/" (name panel)))}
+                   :on-click #(do (secretary/dispatch! (str "/" (name panel)))
+                                  (rf/dispatch [load-event]))}
      [ui/icon {:name icon}] label]))
 
 (defn side-bar [panel]

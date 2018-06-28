@@ -12,9 +12,9 @@
         (get-in db [:user-channels :all] db))))
 
 (reg-sub
- :selected-user-channel
+ :selected-channel
  (fn [db _]
-   (get-in db [:user-channels :selected])))
+   (:selected-channel db)))
 
 (reg-sub
  :stories

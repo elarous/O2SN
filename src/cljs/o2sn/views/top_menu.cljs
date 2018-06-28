@@ -13,7 +13,7 @@
 
 (defn top-menu-logo []
   [:div
-   [:h4 "O2SN LOGO"]])
+   [:h3 "O2SN"]])
 
 (defn top-menu-search []
   [:div
@@ -85,10 +85,12 @@
                          :on-click #(js/alert "to my profile ... ")}]
       [ui/dropdown-item {:icon "sign out"
                          :text "logout"
-                         :on-click #(js/alert "logging out ...")}]]]]])
+                         :on-click #(secretary/dispatch! "/logout")}]]]]])
 
 (defn main-menu []
-  [ui/segment {:class-name "top-menu"}
+  [ui/segment {:id "top-menu"
+               :color "teal"
+               :inverted true}
    [ui/grid {:columns 16
              :vertical-align "middle"
              :padded "horizontally"}

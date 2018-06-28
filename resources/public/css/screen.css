@@ -1,5 +1,26 @@
+/* colors */
+.teal-50 {
+    background-color : #E0F2F1;
+}
+
+.teal-100 {
+    background-color : #B2DFDB;
+}
+
+.teal-900 {
+    background-color : #004D40;
+}
+
+body {
+    height: 100vh !important;
+    margin: 0px;
+    padding: 0px;
+    border : 0px;
+}
+
+
 /* so that the form container take the full height */
-body,
+/* body, */
 body > #app,
 body > #app > div,
 body > #app > div > div,
@@ -24,9 +45,12 @@ body > #app > div > div > div.signup-form {
 }
 
 
-.top-menu {
+#top-menu {
     margin: 0px !important;
     padding: 5px !important;
+    border-radius : 0px !important;
+    border: none;
+    box-shadow: 0px 1px 1px #BDBDBD;
 }
 
 .top-menu-search, .top-menu-search .input {
@@ -51,8 +75,9 @@ body > #app > div > div > div.signup-form {
 
 #news-cards {
     display : flex;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
+    height: 100%;
 }
 
 #news-card {
@@ -79,4 +104,11 @@ body > #app > div > div > div.signup-form {
 
 #new-story-add-img-input {
     display : none;
+}
+
+
+#my-channels-tab {
+    display: flex;
+    flex-flow : row wrap;
+    justify-content: space-around;
 }

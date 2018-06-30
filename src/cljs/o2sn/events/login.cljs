@@ -72,7 +72,9 @@
             (assoc-in [:login-form :errors?] false)
             (assoc-in [:login-form :processing?] false)
             (assoc :checking-auth? false))
-    :dispatch [:set-active-page :home]}))
+    :dispatch-n [[:set-active-page :home]
+                 [:profile/load-profile
+                  (get-in db [:user :current :_key])]]}))
 
 (reg-event-db
  :login-fail

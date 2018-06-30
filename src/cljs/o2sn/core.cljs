@@ -41,7 +41,7 @@
 (defn panel-trans [panel]
   [ui/transition {:visible (not @(rf/subscribe [:panel-hiding?]))
                   :animation "scale"
-                  :duration 500
+                  :duration 300
                   :transition-on-mount true
                   :mount-on-show true}
    [:div {:style {:height "100%"}}
@@ -100,6 +100,9 @@
 (secretary/defroute "/channel/add" []
   (do (rf/dispatch [:set-active-panel :channels])
       (rf/dispatch [:channels/switch-named-tab :add])))
+
+(secretary/defroute "/profile" []
+  (rf/dispatch [:set-active-panel :profile]))
 
 
 ;; -------------------------

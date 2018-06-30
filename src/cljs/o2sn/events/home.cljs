@@ -24,17 +24,22 @@
                  :format (ajax/text-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success [:load-stories-success]
-                 :on-failure [:load-stories-fail]}}))
+                 :on-failure [:load-stories-fail]}
+    :db (assoc db :loading-stories true)}))
 
 (reg-event-db
  :load-stories-success
  (fn [db [_ resp]]
-   (assoc db :stories resp)))
+   (-> db
+       (assoc :stories resp)
+       (assoc :loading-stories false))))
 
 (reg-event-db
  :load-stories-fail
  (fn [db _]
-   (assoc db :stories [])))
+   (-> db
+       (assoc :stories [])
+       (assoc :loading-stories false))))
 
 (reg-event-db
  :show-story-modal

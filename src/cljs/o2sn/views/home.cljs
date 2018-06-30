@@ -2,7 +2,8 @@
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
             [o2sn.ui :as ui]
-            [o2sn.views.maps :as m]))
+            [o2sn.views.maps :as m]
+            [secretary.core :as secretary]))
 
 ;; helper functions
 
@@ -190,7 +191,10 @@
               :vertical-align "middle"}
      (for [u @(rf/subscribe [:story-like-modal-users])]
        ^{:key (:_key u)}
-       [ui/list-item
+       [ui/list-item  {:on-click #(do (rf/dispatch [:hide-story-users-like-modal])
+                                      (rf/dispatch [:set-active-panel :profile])
+                                      (rf/dispatch [:profile/load-by-user
+                                                    (:_key u)]))}
         [ui/image {:src "img/myAvatar.svg"
                    :avatar true
                    :size "mini"}]
@@ -243,7 +247,8 @@
         (count (:dislikes story))]]]]]])
 
 (defn chan-contents []
-  [ui/segment {:style {:background-color "#FAFAFA"
+  [ui/segment {:loading @(rf/subscribe [:loading-stories?])
+               :style {:background-color "#FAFAFA"
                        :height "100%"}}
    [:div#news-cards
     [card-likes-modal]

@@ -28,6 +28,7 @@
                 :inverted true}
     [menu-item {:panel  :home :label "Home" :icon  "home"}]
     [menu-item {:panel :channels :label "Channels" :icon "podcast"}]
+    [menu-item {:panel :profile :label "Profile" :icon "user"}]
     [menu-item {:panel :messages :label "Messages" :icon "envelope"}]
     [menu-item {:panel :friends :label "Friends" :icon "users"}]
     [menu-item {:panel :settings :label "Settings" :icon "settings"}]]

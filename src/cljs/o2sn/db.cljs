@@ -3,7 +3,8 @@
             [o2sn.views.login :as login]
             [o2sn.views.signup :as signup]
             [o2sn.views.new-story :as new-story]
-            [o2sn.views.channels :as channels]))
+            [o2sn.views.channels :as channels]
+            [o2sn.views.profile :as profile]))
 
 (def default-db
   {:checking-auth? false
@@ -25,13 +26,15 @@
    :panels {:home #'home/home-main
             :messages #'home/messages-panel
             :new-story #'new-story/new-story-panel
-            :channels #'channels/channels-panel}
+            :channels #'channels/channels-panel
+            :profile #'profile/profile-panel}
 
    :sidebar {:visible true}
    :user {:logged-in? false
           :current nil}
    :selected-channel ""
    :stories []
+   :loading-stories false
    :story-modal {:story  nil
                  :visible false
                  :images {:current 0}
@@ -103,4 +106,23 @@
               :saving {:visible false
                        :progress 0
                        :state :progress
-                       :error-msg ""}}})
+                       :error-msg ""}}
+   :profile {:infos {:avatar ""
+                     :fullname ""
+                     :username ""
+                     :email ""
+                     :age 0
+                     :gender ""
+                     :country ""}
+             :stats {:stories 0
+                     :truths 0
+                     :lies 0
+                     :likes 0
+                     :dislikes 0}
+             :activities []
+             :rating {:truths 4
+                      :lies 3}
+             :loading? {:infos false
+                        :stats false
+                        :activities false
+                        :rating false}}})

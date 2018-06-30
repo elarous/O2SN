@@ -81,3 +81,14 @@
  :story-map-visible?
  (fn [db _]
    (get-in db [:story-modal :map-visible?])))
+
+(reg-sub
+ :loading-stories?
+ (fn [db _]
+   (:loading-stories db)))
+
+(reg-sub
+ :user-avatar
+ (fn [db _]
+   (->> (get-in db [:user :current :avatar])
+        (str "avatars/"))))

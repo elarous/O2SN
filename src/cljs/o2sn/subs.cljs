@@ -5,4 +5,5 @@
             o2sn.subs.login
             o2sn.subs.signup
             o2sn.subs.new-story
-            o2sn.subs.channels))
+            o2sn.subs.channels
+            o2sn.subs.profile))

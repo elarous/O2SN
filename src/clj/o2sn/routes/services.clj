@@ -10,7 +10,8 @@
             [o2sn.services.users :as users]
             [o2sn.services.channels :as channels]
             [o2sn.services.stories :as stories]
-            [o2sn.services.categories :as categories]))
+            [o2sn.services.categories :as categories]
+            [o2sn.services.profiles :as profiles]))
 
 (defn access-error [_ _]
   (unauthorized {:error "unauthorized"}))
@@ -80,6 +81,33 @@
       :auth-rules authenticated?
       :summary "logout the current user."
       (users/logout req)))
+
+  (context "/profiles" []
+    (GET "/user/:user-k/profile" []
+      :auth-rules authenticated?
+      :path-params [user-k :- s/Str]
+      :summary "get the profile of the given user"
+      (profiles/get-profile user-k))
+
+    (GET "/user/:user-k/stats" []
+      :auth-rules authenticated?
+      :path-params [user-k :- s/Str]
+      :summary "get the stats of the given user"
+      (profiles/get-stats user-k))
+
+    (GET "/user/:user-k/activities" []
+      :auth-rules authenticated?
+      :path-params [user-k :- s/Str]
+      :summary "get the activities of the given user"
+      (profiles/get-activities user-k))
+
+    (GET "/user/:user-k/rating" []
+      :auth-rules authenticated?
+      :path-params [user-k :- s/Str]
+      :summary "get the rating of the given user"
+      (profiles/get-rating user-k)))
+
+
 
   (context "/channels" []
     (GET "/user/current" req

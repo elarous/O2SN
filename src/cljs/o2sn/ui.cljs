@@ -78,6 +78,13 @@
 (def loader                (r/adapt-react-class (component "Loader")))
 (def select                (r/adapt-react-class (component "Select")))
 (def confirm               (r/adapt-react-class (component "Confirm")))
+(def flag                  (r/adapt-react-class (component "Flag")))
+(def statistic             (r/adapt-react-class (component "Statistic")))
+(def statistic-group       (r/adapt-react-class (component "Statistic" "Group")))
+(def statistic-value       (r/adapt-react-class (component "Statistic" "Value")))
+(def statistic-label       (r/adapt-react-class (component "Statistic" "Label")))
+(def rating                (r/adapt-react-class (component "Rating")))
+
 
 
 ;; motions

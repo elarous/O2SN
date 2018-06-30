@@ -5,7 +5,8 @@
                                    debug]]
             [day8.re-frame.http-fx]
             [ajax.core :as ajax]
-            [o2sn.validation :as v]))
+            [o2sn.validation :as v]
+            [o2sn.db :as db-ns]))
 
 (reg-event-fx
  :logout
@@ -20,8 +21,7 @@
 (reg-event-fx
  :logout-success
  (fn [{db :db} _]
-   {:db (-> db
-            (assoc-in [:user :logged-in?] false))
+   {:db db-ns/default-db
     :dispatch [:set-active-page :login]}))
 
 (reg-event-db

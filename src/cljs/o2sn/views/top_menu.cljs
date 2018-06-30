@@ -84,13 +84,14 @@
      {:icon false
       :pointing "top right"
       :trigger (r/as-element
-                [ui/image {:src "img/myAvatar.svg"
+                [ui/image {:src @(rf/subscribe [:user-avatar])
                            :avatar true
                            :class-name "top-menu-avatar"}])}
      [ui/dropdown-menu
       [ui/dropdown-item {:icon "user"
                          :text "my profile"
-                         :on-click #(js/alert "to my profile ... ")}]
+                         :on-click #(do (secretary/dispatch! "/profile")
+                                        (rf/dispatch [:profile/load]))}]
       [ui/dropdown-item {:icon "sign out"
                          :text "logout"
                          :on-click #(secretary/dispatch! "/logout")}]]]]])

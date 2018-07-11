@@ -2,7 +2,8 @@
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
             [secretary.core :as secretary]
-            [o2sn.ui :as ui]))
+            [o2sn.ui :as ui]
+            [o2sn.views.notifications :as notifications]))
 
 (defn top-menu-sidebar-btn []
   [:div
@@ -23,20 +24,27 @@
 (defn top-menu-feed []
   [ui/popup {:hoverable true
              :position "bottom right"
-             :style {:height "auto"}
-             :trigger (r/as-element
-                       [:span.menu-action
-                        [ui/icon {:name "feed"
-                                  :size "large"
-                                  :link true}]])}
-   [ui/feed
-    [ui/feed-event {:icon "pencil"
-                    :date "Today"
-                    :summary "my first event ever"}]
-    [ui/feed-event {:icon "pencil"
-                    :date "Today"
-                    :summary "my second event ever"}]]])
-
+             :style {:height "auto"
+                     :min-width "260px"}
+             :open @(rf/subscribe [:notifs/opened?])
+             :on-open #(rf/dispatch [:notifs/open-notifs])
+             :on-close #(rf/dispatch [:notifs/close-notifs])
+             :trigger
+             (r/as-element
+              [:span.menu-action
+               [ui/icon
+                {:name "bell"
+                 :size "large"
+                 :link true
+                 :color (when (pos? @(rf/subscribe [:notifs/unreads-count]))
+                          "yellow")
+                 :inverted true
+                 :circular (pos? @(rf/subscribe [:notifs/unreads-count]))
+                 :on-click
+                 #(do
+                    (rf/dispatch [:set-active-panel :notifs-history])
+                    (rf/dispatch [:notifs-history/get-notifs]))}]])}
+   [notifications/menu-notifications]])
 
 (defn top-menu-messages []
   [ui/popup {:hoverable true
@@ -72,7 +80,6 @@
                    :on-click #(secretary/dispatch! "/channel/add")}
      [ui/icon {:name "tv"}]
      "New Channel"]]])
-
 
 (defn top-menu-actions []
   [:div.top-menu-actions

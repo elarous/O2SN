@@ -73,8 +73,9 @@
             (assoc-in [:login-form :processing?] false)
             (assoc :checking-auth? false))
     :dispatch-n [[:set-active-page :home]
-                 [:profile/load-profile
-                  (get-in db [:user :current :_key])]]}))
+                 [:profile/load-profile (:_key resp)]
+                 [:notifs/get-notifs]]
+    :notifs/create-ws nil}))
 
 (reg-event-db
  :login-fail

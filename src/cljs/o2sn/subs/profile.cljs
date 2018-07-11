@@ -44,19 +44,7 @@
 (reg-sub
  :profile/activities
  (fn [db _]
-   (->> (get-in db [:profile :activities])
-        (map #(hash-map :key (:_key %)
-                        :date (str (:date %) " " (:time %))
-                        :icon (cond (= (:type %) "story-add")
-                                    "plus"
-                                    (= (:type %) "story-like")
-                                    "thumbs up"
-                                    (= (:type %) "story-dislike")
-                                    "thumbs down")
-                        :content (str (-> (:type %)
-                                          (s/split #"-")
-                                          last)
-                                      " " (:target %)))))))
+   (get-in db [:profile :activities])))
 
 (reg-sub
  :profile/rating

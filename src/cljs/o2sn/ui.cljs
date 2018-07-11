@@ -2,6 +2,7 @@
   (:require [cljsjs.semantic-ui-react :as sm]
             [cljsjs.react-motion]
             [cljsjs.react-google-maps]
+            [cljsjs.toastr]
             [reagent.core :as r]
             [goog.object]))
 
@@ -99,3 +100,8 @@
 (def marker (r/adapt-react-class js/ReactGoogleMaps.Marker))
 (def with-google-map js/ReactGoogleMaps.withGoogleMap)
 (def with-scriptjs js/ReactGoogleMaps.withScriptjs)
+
+;; toastr
+(def toastr js/toastr)
+(aset js/toastr "options" (clj->js {:progressBar true
+                                    :positionClass "toast-bottom-right"}))

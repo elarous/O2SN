@@ -3,7 +3,8 @@
             [re-frame.core :as rf]
             [o2sn.ui :as ui]
             [o2sn.views.maps :as m]
-            [secretary.core :as secretary]))
+            [secretary.core :as secretary]
+            [o2sn.websockets :as ws]))
 
 ;; helper functions
 
@@ -195,7 +196,7 @@
                                       (rf/dispatch [:set-active-panel :profile])
                                       (rf/dispatch [:profile/load-by-user
                                                     (:_key u)]))}
-        [ui/image {:src "img/myAvatar.svg"
+        [ui/image {:src (str "avatars/" (:avatar u))
                    :avatar true
                    :size "mini"}]
         [ui/list-content
@@ -315,8 +316,4 @@
   [@(rf/subscribe [:active-panel])])
 
 (defn messages-panel []
-  [:div
-   [:h2 "Messages : "]
-   [:ul
-    [:li "first ...."]
-    [:li "second ...."]]])
+  [:div])

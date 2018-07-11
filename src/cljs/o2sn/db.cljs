@@ -4,7 +4,8 @@
             [o2sn.views.signup :as signup]
             [o2sn.views.new-story :as new-story]
             [o2sn.views.channels :as channels]
-            [o2sn.views.profile :as profile]))
+            [o2sn.views.profile :as profile]
+            [o2sn.views.notifications-history :as notifs-history]))
 
 (def default-db
   {:checking-auth? false
@@ -27,7 +28,8 @@
             :messages #'home/messages-panel
             :new-story #'new-story/new-story-panel
             :channels #'channels/channels-panel
-            :profile #'profile/profile-panel}
+            :profile #'profile/profile-panel
+            :notifs-history #'notifs-history/notifs-history-panel}
 
    :sidebar {:visible true}
    :user {:logged-in? false
@@ -125,4 +127,7 @@
              :loading? {:infos false
                         :stats false
                         :activities false
-                        :rating false}}})
+                        :rating false}}
+   :notifications {:all []
+                   :unreads []
+                   :opened? false}})

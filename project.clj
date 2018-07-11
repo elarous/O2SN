@@ -1,8 +1,6 @@
 (defproject o2sn "0.1.0-SNAPSHOT"
-
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
-
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.238" :scope "provided"]
                  [org.clojure/tools.cli "0.3.6"]
@@ -33,6 +31,8 @@
                  [cljsjs/react-transition-group "2.3.0-0"]
                  [cljsjs/react-motion "0.5.0-0"]
                  [cljsjs/react-google-maps "9.4.5-0"]
+                 [cljsjs/jquery "3.2.1-0"]
+                 [cljsjs/toastr "2.1.2-0"]
                  [re-frame "0.10.5"]
                  [reagent "0.7.0"]
                  [ring-webjars "0.2.0"]
@@ -42,10 +42,10 @@
                  [selmer "1.11.7"]
                  [com.arangodb/arangodb-java-driver "4.3.4"]
                  [day8.re-frame/http-fx "0.1.6"]
-                 [com.draines/postal "2.0.2"]]
+                 [com.draines/postal "2.0.2"]
+                 [com.cognitect/transit-clj "0.8.309"]]
 
   :min-lein-version "2.0.0"
-  
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :test-paths ["test/clj"]
   :resource-paths ["resources" "target/cljsbuild"]
@@ -62,7 +62,6 @@
    :css-dirs ["resources/public/css"]
    :nrepl-middleware
    [cemerick.piggieback/wrap-cljs-repl cider.nrepl/cider-middleware]}
-  
 
   :profiles
   {:uberjar {:omit-source true
@@ -118,9 +117,6 @@
                       :pretty-print true
                       :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
                       :preloads [day8.re-frame-10x.preload]}}}}
-                  
-                  
-                  
                   :doo {:build "test"}
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
@@ -139,7 +135,6 @@
                       :main "o2sn.doo-runner"
                       :optimizations :whitespace
                       :pretty-print true}}}}
-                  
                   }
    :profiles/dev {}
    :profiles/test {}})

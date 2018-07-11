@@ -30,6 +30,7 @@
                          subscribers : count(subscribers)}"]
     (-> (db/query! q-str {:locid loc-id}) first)))
 
+
 (defn create [loc-key]
   (if-let [chan (find-by-loc (str "locations/" loc-key))]
     chan
@@ -72,8 +73,31 @@
                  remove s in subscribe"]
     (db/query! q-str {:userid user-id :chanid chan-id})))
 
+(defn all-by-loc [loc-id]
+  (let [q-str "let loc = document(@locid)
+               let directChan = (for c in channels
+                                  filter c.location == @locid
+                                    return merge(c,
+                                      {name : loc.name, type : loc.type}))
+               let parentChans = (
+                for p in 1..5 inbound loc._id contains
+                  for chan in channels
+                    filter chan.location == p._id
+                      return distinct merge(chan,{name : p.name, type : p.type}))
+               return append(directChan,parentChans)"]
+    (-> (db/query! q-str {:locid loc-id})
+        first)))
+
+(defn subscribers [chan-id]
+  (let [q-str " for u in 1..1 inbound @chanid subscribe
+                  return u"]
+    (db/query! q-str {:chanid chan-id})))
+
+#_(subscribers "channels/1839328")
+#_(all-by-loc "1839372")
 #_(subscribed? "1" "1836319")
 #_(create "1763553")
 #_(find-by-loc "1747504")
 #_(by-user 1)
 #_(subscribe "2" "2")
+

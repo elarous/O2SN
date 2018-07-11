@@ -11,7 +11,9 @@
             [o2sn.services.channels :as channels]
             [o2sn.services.stories :as stories]
             [o2sn.services.categories :as categories]
-            [o2sn.services.profiles :as profiles]))
+            [o2sn.services.profiles :as profiles]
+            [o2sn.services.notifications :as notifs]
+            [o2sn.services.activities :as activities]))
 
 (defn access-error [_ _]
   (unauthorized {:error "unauthorized"}))
@@ -226,6 +228,33 @@
                           :category category
                           :datetime {:date date :time time}
                           :user (:identity req)})))
+
+  (context "/activities" []
+    (GET "/unreads" req
+      :auth-rules authenticated?
+      (activities/unreads (str "users/" (:identity req))))
+
+    (GET "/all" req
+      :auth-rules authenticated?
+      (activities/all (str "users/" (:identity req))))
+
+    (GET "/mark/read/:activity-k" req
+      :auth-rules authenticated?
+      :path-params [activity-k :- String]
+      (activities/mark-read (str "users/" (:identity req))
+                            (str "activities/" activity-k)))
+    (GET "/mark/read-all" req
+      :auth-rules authenticated?
+      :summary "mark all user's notifications as read"
+      (activities/mark-read-all (str "users/" (:identity req))))
+
+    (GET "/last/:user-k/:n" req
+      :auth-rules authenticated?
+      :path-params [user-k :- s/Str
+                    n :- s/Int]
+      :summary "get the n latest user activities"
+      (activities/get-last (str "users/" user-k) n)))
+
 
   (context "/api" []
     :tags ["thingie"]

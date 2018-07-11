@@ -85,12 +85,20 @@
                  :color "teal"
                  :content "Recent Activities"}]
      [ui/divider]
-     [ui/feed
-      (for [a activities]
-        ^{:key (:key a)}
-        [ui/feed-event {:icon (:icon a)
-                        :date (:date a)
-                        :summary (:content a)}])]]))
+     [:div {:style {:padding-left "40px"}}
+      [ui/feed
+       (for [a activities]
+         ^{:key (:_key a)}
+         [ui/feed-event {:icon
+                         (case (keyword (:type a))
+                           :new-story "plus"
+                           :like "thumbs up"
+                           :dislike "thumbs down"
+                           :truth "check"
+                           :lie "x"
+                           "feed")
+                         :date "Today"
+                         :summary (get-in a [:target :title])}])]]]))
 
 (defn rating-segment []
   (let [rating @(rf/subscribe [:profile/rating])

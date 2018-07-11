@@ -97,12 +97,15 @@
                    :on-success [:new-story/save-success]
                    :on-failure [:new-story/save-fail]}})))
 
-(reg-event-db
+(reg-event-fx
  :new-story/save-success
- (fn [db [_ story]]
-   (-> db
-       (assoc-in [:new-story :saving :state] :success)
-       (assoc-in [:new-story :saving :progress] 100))))
+ (fn [{db :db} [_ story]]
+   {:db (-> db
+            (assoc-in [:new-story :saving :state] :success)
+            (assoc-in [:new-story :saving :progress] 100))
+    :notifs/send {:type :new-story
+                  :target (:_id story)
+                  :location (:location story)}}))
 
 (reg-event-db
  :new-story/save-fail
@@ -121,7 +124,6 @@
  :new-story/reset
  (fn [db _]
    (assoc db :new-story (:new-story db-ns/default-db))))
-
 
 ;; events for the saving phase
 (reg-event-db

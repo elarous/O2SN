@@ -29,4 +29,3 @@
  (fn [db _]
    (-> db
        (assoc-in [:user :logged-in?] true))))
-

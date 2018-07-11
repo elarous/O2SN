@@ -77,9 +77,7 @@
  :profile/load-activities
  (fn [{db :db} [_ user-k]]
    {:http-xhrio {:method :get
-                 :uri (str "/profiles/user/"
-                           user-k
-                           "/activities")
+                 :uri (str "/activities/last/" user-k "/5")
                  :format (ajax/text-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success [:profile/load-activities-success]

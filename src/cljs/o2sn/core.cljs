@@ -14,19 +14,11 @@
             [o2sn.views.login :as login]
             [o2sn.views.signup :as signup]
             [o2sn.views.top-menu :as tmenu]
-            [o2sn.views.sidebar :as sidebar])
+            [o2sn.views.sidebar :as sidebar]
+            [o2sn.websockets :as ws])
   (:import goog.History))
 
-(defn about-page []
-  [ui/popup {:hoverable false
-             :position "bottom left"
-             :style {:height "auto"}
-             :trigger (r/as-element
-                       [:span
-                        [ui/icon {:namfacebook.come "feed"
-                                  :size "large"
-                                  :link true}]])}
-   [:button "click here"]])
+
 
 
 
@@ -105,6 +97,7 @@
   (rf/dispatch [:set-active-panel :profile]))
 
 
+
 ;; -------------------------
 ;; History
 ;; must be called after routes have been defined
@@ -128,7 +121,8 @@
 (defn init! []
   (rf/dispatch-sync [:initialize-db])
   (rf/dispatch-sync [:check-authenticated])
-  (rf/dispatch-sync [:get-categories])
+  (rf/dispatch [:get-categories])
+  
   (load-interceptors!)
   (fetch-docs!)
   (hook-browser-navigation!)

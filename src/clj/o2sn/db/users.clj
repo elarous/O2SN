@@ -47,8 +47,7 @@
   [_ username]
   (let [q-str "for u in users
                 filter u.username == @username
-                let profile = document(u.profile)
-                return merge(u,{avatar: profile.avatar})"]
+                return u"]
     (-> (db/query! q-str {:username username})
         first)))
 

@@ -29,6 +29,16 @@
         return v"]
     (db/query! q-str {:id id})))
 
+(defn liking [story-id]
+  (let [q-str "for u in 1..1 inbound @id liking
+              return u"]
+    (db/query! q-str {:id story-id})))
+
+(defn disliking [story-id]
+  (let [q-str "for u in 1..1 inbound @id disliking
+              return u"]
+    (db/query! q-str {:id story-id})))
+
 (defn by-user [user-key]
   (let [id (str "users/" user-key)
         q-str "for s in 1..1 outbound @id own
@@ -216,3 +226,10 @@
   (db/with-coll :own
     (db/insert-doc! {:_from (str "users/" user-k)
                      :_to (str "stories/" story-k)})))
+
+(defn by-key [story-k]
+  (db/with-coll :stories
+    (db/get-doc story-k)))
+
+(defn by-id [story-id]
+  (by-key (second (clojure.string/split story-id #"/"))))

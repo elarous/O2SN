@@ -101,9 +101,9 @@
                    :on-failure [:toggle-like-story-fail]}
       :dispatch [:toggle-dislike-story-success story-k false]})))
 
-(reg-event-db
+(reg-event-fx
  :toggle-like-story-success
- (fn [db [_ story-k now-liked?]]
+ (fn [{db :db} [_ story-k now-liked?]]
    (let [stories (:stories db)
          target (get-story db story-k)
          strs-without-target (filterv #(not= (:_key %) story-k) stories)
@@ -116,7 +116,11 @@
                                                 (:_key (get-in db [:user :current])))
                                             o))))
          updated-stories (conj strs-without-target updated-target)]
-     (assoc db :stories updated-stories))))
+     (merge
+      {:db (assoc db :stories updated-stories)}
+      (when now-liked?
+        {:notifs/send {:type :like
+                       :target (str "stories/" story-k)}})))))
 
 (reg-event-db
  :toggle-like-story-fail
@@ -139,9 +143,9 @@
                    :on-failure [:toggle-dislike-story-fail]}
       :dispatch [:toggle-like-story-success story-k false]})))
 
-(reg-event-db
+(reg-event-fx
  :toggle-dislike-story-success
- (fn [db [_ story-k now-disliked?]]
+ (fn [{db :db} [_ story-k now-disliked?]]
    (let [stories (:stories db)
          target (get-story db story-k)
          strs-without-target (filterv #(not= (:_key %) story-k) stories)
@@ -154,7 +158,11 @@
                                                 (:_key (get-in db [:user :current])))
                                             o))))
          updated-stories (conj strs-without-target updated-target)]
-     (assoc db :stories updated-stories))))
+     (merge
+      {:db (assoc db :stories updated-stories)}
+      (when now-disliked?
+        {:notifs/send {:type :dislike
+                       :target (str "stories/" story-k)}})))))
 
 (reg-event-db
  :toggle-dislike-story-fail
@@ -177,9 +185,9 @@
                    :on-failure [:toggle-truth-story-fail]}
       :dispatch [:toggle-lie-story-success story-k false]})))
 
-(reg-event-db
+(reg-event-fx
  :toggle-truth-story-success
- (fn [db [_ story-k now-truth?]]
+ (fn [{db :db} [_ story-k now-truth?]]
    (let [stories (:stories db)
          target (get-story db story-k)
          strs-without-target (filterv #(not= (:_key %) story-k) stories)
@@ -192,7 +200,11 @@
                                                 (:_key (get-in db [:user :current])))
                                             o))))
          updated-stories (conj strs-without-target updated-target)]
-     (assoc db :stories updated-stories))))
+     (merge
+      {:db (assoc db :stories updated-stories)}
+      (when now-truth?
+        {:notifs/send {:type :truth
+                       :target (str "stories/" story-k)}})))))
 
 (reg-event-db
  :toggle-truth-story-fail
@@ -215,9 +227,9 @@
                    :on-failure [:toggle-lie-story-fail]}
       :dispatch [:toggle-truth-story-success story-k false]})))
 
-(reg-event-db
+(reg-event-fx
  :toggle-lie-story-success
- (fn [db [_ story-k now-lie?]]
+ (fn [{db :db} [_ story-k now-lie?]]
    (let [stories (:stories db)
          target (get-story db story-k)
          strs-without-target (filterv #(not= (:_key %) story-k) stories)
@@ -230,7 +242,11 @@
                                                 (:_key (get-in db [:user :current])))
                                             o))))
          updated-stories (conj strs-without-target updated-target)]
-     (assoc db :stories updated-stories))))
+     (merge
+      {:db (assoc db :stories updated-stories)}
+      (when now-lie?
+        {:notifs/send {:type :lie
+                       :target (str "stories/" story-k)}})))))
 
 (reg-event-db
  :toggle-lie-story-fail

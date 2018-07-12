@@ -86,6 +86,9 @@
 (secretary/defroute "/home" []
   (rf/dispatch [:set-active-panel :home]))
 
+(secretary/defroute "/story" []
+  (rf/dispatch [:set-active-panel :story]))
+
 (secretary/defroute "/channels" []
   (rf/dispatch [:set-active-panel :channels]))
 

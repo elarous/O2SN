@@ -22,7 +22,8 @@
  :logout-success
  (fn [{db :db} _]
    {:db db-ns/default-db
-    :dispatch [:set-active-page :login]}))
+    :dispatch [:set-active-page :login]
+    :notifs/close nil}))
 
 (reg-event-db
  :logout-fail

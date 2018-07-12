@@ -27,23 +27,6 @@
    (get-in db [:categories cat])))
 
 (reg-sub
- :current-story
- (fn [db _]
-   (get-current-story db)))
-
-(reg-sub
- :story-modal-visible?
- (fn [db _]
-   (get-in db [:story-modal :visible])))
-
-(reg-sub
- :story-modal-img
- (fn [db _]
-   (let [story (get-current-story db)]
-     (nth (:images story)
-          (get-in db [:story-modal :images :current])))))
-
-(reg-sub
  :story-like-modal-visible
  (fn [db _]
    (get-in db [:story-like-modal :visible])))
@@ -64,24 +47,6 @@
  (fn [db [_ story-k]]
    (some #(= (:_key %) (:_key (get-in db [:user :current])))
          (:dislikes (get-story db story-k)))))
-
-(reg-sub
- :marked-story-truth?
- (fn [db [_ story-k]]
-   (some #(= (:_key %) (:_key (get-in db [:user :current])))
-         (:truth (get-story db story-k)))))
-
-(reg-sub
- :marked-story-lie?
- (fn [db [_ story-k]]
-   (some #(= (:_key %) (:_key (get-in db [:user :current])))
-         (:lie (get-story db story-k)))))
-
-(reg-sub
- :story-map-visible?
- (fn [db _]
-   (get-in db [:story-modal :map-visible?])))
-
 (reg-sub
  :loading-stories?
  (fn [db _]

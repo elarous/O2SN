@@ -8,8 +8,6 @@
             [o2sn.helpers.stories :refer [get-story
                                           get-current-story]]))
 
-;; helper functions
-
 (reg-event-fx
  :set-selected-user-chan
  (fn [{db :db} [_ k]]
@@ -40,39 +38,6 @@
    (-> db
        (assoc :stories [])
        (assoc :loading-stories false))))
-
-(reg-event-db
- :show-story-modal
- (fn [db [_ k]]
-   (-> db
-       (assoc-in [:story-modal :story] k)
-       (assoc-in [:story-modal :visible] true)
-       (assoc-in [:story-modal :images :current] 0))))
-
-(reg-event-db
- :hide-story-modal
- (fn [db _]
-   (assoc-in db [:story-modal :visible] false)))
-
-(reg-event-db
- :next-story-modal-img
- (fn [db _]
-   (let [cnt (-> (get-current-story db) :images count)
-         curnt (get-in db [:story-modal :images :current])
-         nxt (if (= curnt (dec cnt))
-               0
-               (inc curnt))]
-     (assoc-in db [:story-modal :images :current] nxt))))
-
-(reg-event-db
- :previous-story-modal-img
- (fn [db _]
-   (let [cnt (-> (get-current-story db) :images count)
-         curnt (get-in db [:story-modal :images :current])
-         prv (if (= curnt 0)
-               (dec cnt)
-               (dec curnt))]
-     (assoc-in db [:story-modal :images :current] prv))))
 
 (reg-event-db
  :show-story-users-like-modal
@@ -169,92 +134,3 @@
  (fn [db [_ resp]]
    (js/console.log "couldn't modify 'dislike' of a story" resp)
    db))
-
-(reg-event-fx
- :toggle-truth-story
- (fn [{db :db} [_ story-k]]
-   (let [truth? (some #(= (:_key %) (:_key (get-in db [:user :current])))
-                         (:truth (get-story db story-k)))
-         truth-uri (str "/stories/story/" story-k "/mark/truth")
-         not-truth-uri (str "/stories/story/" story-k "/unmark/truth")]
-     {:http-xhrio {:method :get
-                   :uri (if truth? not-truth-uri truth-uri)
-                   :format (ajax/text-request-format)
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success [:toggle-truth-story-success story-k (not truth?)]
-                   :on-failure [:toggle-truth-story-fail]}
-      :dispatch [:toggle-lie-story-success story-k false]})))
-
-(reg-event-fx
- :toggle-truth-story-success
- (fn [{db :db} [_ story-k now-truth?]]
-   (let [stories (:stories db)
-         target (get-story db story-k)
-         strs-without-target (filterv #(not= (:_key %) story-k) stories)
-         updated-target (if now-truth?
-                          (update target :truth
-                                  #(conj % (get-in db [:user :current])))
-                          (update target :truth
-                                  (fn [o]
-                                    (remove #(= (:_key %)
-                                                (:_key (get-in db [:user :current])))
-                                            o))))
-         updated-stories (conj strs-without-target updated-target)]
-     (merge
-      {:db (assoc db :stories updated-stories)}
-      (when now-truth?
-        {:notifs/send {:type :truth
-                       :target (str "stories/" story-k)}})))))
-
-(reg-event-db
- :toggle-truth-story-fail
- (fn [db [_ resp]]
-   (js/console.log "couldn't modify 'truth' of a story" resp)
-   db))
-
-(reg-event-fx
- :toggle-lie-story
- (fn [{db :db} [_ story-k]]
-   (let [lie? (some #(= (:_key %) (:_key (get-in db [:user :current])))
-                      (:lie (get-story db story-k)))
-         lie-uri (str "/stories/story/" story-k "/mark/lie")
-         not-lie-uri (str "/stories/story/" story-k "/unmark/lie")]
-     {:http-xhrio {:method :get
-                   :uri (if lie? not-lie-uri lie-uri)
-                   :format (ajax/text-request-format)
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success [:toggle-lie-story-success story-k (not lie?)]
-                   :on-failure [:toggle-lie-story-fail]}
-      :dispatch [:toggle-truth-story-success story-k false]})))
-
-(reg-event-fx
- :toggle-lie-story-success
- (fn [{db :db} [_ story-k now-lie?]]
-   (let [stories (:stories db)
-         target (get-story db story-k)
-         strs-without-target (filterv #(not= (:_key %) story-k) stories)
-         updated-target (if now-lie?
-                          (update target :lie
-                                  #(conj % (get-in db [:user :current])))
-                          (update target :lie
-                                  (fn [o]
-                                    (remove #(= (:_key %)
-                                                (:_key (get-in db [:user :current])))
-                                            o))))
-         updated-stories (conj strs-without-target updated-target)]
-     (merge
-      {:db (assoc db :stories updated-stories)}
-      (when now-lie?
-        {:notifs/send {:type :lie
-                       :target (str "stories/" story-k)}})))))
-
-(reg-event-db
- :toggle-lie-story-fail
- (fn [db [_ resp]]
-   (js/console.log "couldn't modify 'lie' of a story" resp)
-   db))
-
-(reg-event-db
- :toggle-map-visiblity
- (fn [db _]
-   (update-in db [:story-modal :map-visible?] not)))

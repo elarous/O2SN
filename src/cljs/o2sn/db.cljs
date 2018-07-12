@@ -1,5 +1,6 @@
 (ns o2sn.db
   (:require [o2sn.views.home :as home]
+            [o2sn.views.story :as story]
             [o2sn.views.login :as login]
             [o2sn.views.signup :as signup]
             [o2sn.views.new-story :as new-story]
@@ -25,22 +26,23 @@
            :duration 500
            :hiding? false}
    :panels {:home #'home/home-main
+            :story #'story/story-panel
             :messages #'home/messages-panel
             :new-story #'new-story/new-story-panel
             :channels #'channels/channels-panel
             :profile #'profile/profile-panel
             :notifs-history #'notifs-history/notifs-history-panel}
 
-   :sidebar {:visible true}
+   :sidebar {:visible false}
    :user {:logged-in? false
           :current nil}
    :selected-channel ""
    :stories []
    :loading-stories false
-   :story-modal {:story  nil
-                 :visible false
-                 :images {:current 0}
-                 :map-visible? false}
+   :story {:current  nil
+           :visible false
+           :images {:current 0}
+           :map-visible? false}
    :story-like-modal {:visible false
                       :users []}
    :login-form {:username {:value ""

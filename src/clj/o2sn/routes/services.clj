@@ -147,6 +147,12 @@
       :summary "get all the stories for the given channel"
       (stories/by-channel chan-key))
 
+    (GET "/story/:story-key/get" []
+      :auth-rules authenticated?
+      :path-params [story-key :- String]
+      :summary "get the story by it's key"
+      (stories/by-key story-key))
+
     (GET "/story/:story-key/truth" []
       :auth-rules authenticated?
       :path-params [story-key :- String]

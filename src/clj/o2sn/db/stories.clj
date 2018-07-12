@@ -49,6 +49,35 @@
                            return merge(s,{category: c, location: l})"]
     (db/query! q-str {:id id})))
 
+(defn by-key [story-k]
+  (let [story-id (str "stories/" story-k)
+        q-str "let s = document(@storyid)
+                let cat = document(s.category)
+                let location = document(s.location)
+                let truth = (for t in  1..1 inbound s._id truth
+                                            return t)
+                let lie = (for li in 1..1 inbound s._id lie
+                            return li)
+                let owner = first(for o in 1..1 inbound s._id own
+                    return o)
+
+                let likes = (for lik in 1..1 inbound s._id liking
+                    return lik)
+
+                let dislikes = (for dis in 1..1 inbound s._id disliking
+                    return dis)
+
+                return merge(s,
+                    {location : location,
+                    category : cat,
+                    truth : truth,
+                    lie : lie,
+                    owner : owner,
+                    likes : likes,
+                    dislikes : dislikes})"]
+    (-> (db/query! q-str {:storyid story-id})
+        first)))
+
 ;; TODO : this query retrieves a lot of unnecessary fields, only relevant fields should be selected
 (defn by-channel [chan-key]
   (let [id (str "channels/" chan-key)
@@ -227,7 +256,7 @@
     (db/insert-doc! {:_from (str "users/" user-k)
                      :_to (str "stories/" story-k)})))
 
-(defn by-key [story-k]
+#_(defn by-key [story-k]
   (db/with-coll :stories
     (db/get-doc story-k)))
 

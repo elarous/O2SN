@@ -43,25 +43,40 @@
 (defmethod add-activity :new-story
   [m]
   (let [chans (chans/all-by-loc (:location m))
+        cause-k (-> (:by m)
+                    (clojure.string/split #"/")
+                    second)
         activity (-> m
                      (assoc :channels chans)
                      db/create-activity)
-        users (new-story-users activity)]
-    (db/relevant-to-all (:_key activity) users)
+        users (->> (new-story-users activity)
+                   (remove #{cause-k}))]
+    (when (seq users)
+      (db/relevant-to-all (:_key activity) users))
     activity))
 
 (defmethod add-activity :like-dislike
   [m]
   (let [activity (db/create-activity m)
-        users (like-dislike-users activity)]
-    (db/relevant-to (:_key activity) (first users))
+        cause-k (-> (:by m)
+                    (clojure.string/split #"/")
+                    second)
+        users (->> (like-dislike-users activity)
+                   (remove #{cause-k}))]
+    (when (seq users)
+      (db/relevant-to (:_key activity) (first users)))
     activity))
 
 (defmethod add-activity :truth-lie
   [m]
   (let [activity (db/create-activity m)
-        users-ks (truth-lie-users activity)]
-    (db/relevant-to-all (:_key activity) users-ks)
+        cause-k (-> (:by m)
+                    (clojure.string/split #"/")
+                    second)
+        users  (->> (truth-lie-users activity)
+                      (remove #{cause-k}))]
+    (when (seq users)
+      (db/relevant-to-all (:_key activity) users))
     activity))
 
 (defn unreads [user-id]

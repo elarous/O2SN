@@ -28,6 +28,11 @@
                        #(rf/dispatch [:notifs/receive %]))))
 
 (reg-fx
+ :notifs/close
+ (fn [_]
+   (ws/close! :notifs)))
+
+(reg-fx
  :notifs/send
  (fn [data]
    (ws/send! :notifs data)))
@@ -124,8 +129,10 @@
 
 (reg-event-fx
  :notifs/handle-notif-click
+ [debug]
  (fn [{db :db} [_ notif]]
-   (js/console.log (str (:_key notif) " clicked!"))))
+   (js/console.log (str (:_key notif) " clicked!"))
+   {:dispatch [:story/set-current (get-in notif [:target :_key]) true]}))
 
 (reg-event-fx
  :notifs/mark-read-all

@@ -8,7 +8,8 @@
             [o2sn.db.channels :as chans-db]
             [o2sn.services.activities :as activities]
             [o2sn.db.users :as users]
-            [o2sn.db.stories :as stories])
+            [o2sn.db.stories :as stories]
+            [ring.util.http-response :refer :all])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 (def channels (bus/event-bus))
@@ -38,6 +39,11 @@
                    :new-story (activities/new-story-users activity)
                    (:like :dislike) (activities/like-dislike-users activity)
                    (:truth :lie) (activities/truth-lie-users activity))]
+
+    (println "cause- k : ")
+    (println cause-k)
+    (println "users-ks : ")
+    (println users-ks)
     (->> users-ks
          (remove #{cause-k})
          (map #(str "user_" %)))))
@@ -75,4 +81,5 @@
               channels
               chan
               transit-activity)))
-        conn)))))
+        conn)
+       (ok "Notications WebSocket Connected")))))

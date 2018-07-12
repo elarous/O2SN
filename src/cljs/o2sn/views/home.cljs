@@ -4,183 +4,7 @@
             [o2sn.ui :as ui]
             [o2sn.views.maps :as m]
             [secretary.core :as secretary]
-            [o2sn.websockets :as ws]))
-
-;; helper functions
-
-(defn format-date [datetime]
-  (str (:date datetime) " " (:time datetime)))
-
-;; story details modal
-(defn card-modal-header [story]
-  (let [marked-truth @(rf/subscribe [:marked-story-truth? (:_key story)])
-        marked-lie @(rf/subscribe [:marked-story-lie? (:_key story)])]
-    [ui/modal-header
-     [:div
-      (cond
-        marked-truth [ui/label {:ribbon "right"
-                                :color "green"}
-                      "Marked as Truth"]
-        marked-lie [ui/label {:ribbon "right"
-                              :color "red"}
-                    "Marked as Lie"]
-        :else [ui/label {:ribbon "right"
-                         :color "grey"}
-               "Not Marked"])]
-     (:title story)
-     [ui/label {:color (get-in story [:category :color])}
-      (get-in story [:category :name])]]))
-
-(defn card-modal-imgs [story]
-  (if (seq (:images story))
-    [ui/grid
-     [ui/grid-column {:width 1
-                      :vertical-align "middle"}
-      [ui/icon {:name "chevron left"
-                :link true
-                :size "big"
-                :on-click #(rf/dispatch [:previous-story-modal-img])}]]
-     [ui/grid-column {:width 14
-                      :text-align "center"}
-      [ui/image {:src (str "img/" @(rf/subscribe [:story-modal-img]))
-                 :style {:display "inline"}}]]
-     [ui/grid-column {:width 1
-                      :vertical-align "middle"}
-      [ui/icon {:name "chevron right"
-                :link true
-                :size "big"
-                :on-click #(rf/dispatch [:next-story-modal-img])}]]]
-    [ui/container {:text-align "center"}
-     [ui/header {:as "h3"
-                 :content "This Story Has No Images"
-                 :color "grey"}]]))
-
-(defn card-modal-map [story]
-  [ui/grid
-   [ui/grid-column {:width 1}]
-   [ui/grid-column {:width 14
-                    :text-align "center"}
-    [:div#map
-     [m/wrapped-map {:lng (get-in story [:location :lng])
-                     :lat (get-in story [:location :lat])
-                     :on-click (fn [_] _)}]]]
-   [ui/grid-column {:width 1}]])
-
-(defn card-modal-date [story]
-  [ui/button {:icon true
-              :label-position "left"
-              :color "teal"
-              :size "small"}
-   [ui/icon {:name "calendar"}]
-   (format-date (:datetime story))])
-
-(defn card-modal-location [story]
-  (if-not @(rf/subscribe [:story-map-visible?])
-    [ui/button {:icon  true
-                :label-position "left"
-                :color "teal"
-                :size "small"
-                :on-click #(rf/dispatch [:toggle-map-visiblity])}
-     [ui/icon {:name "world"}]
-     "View On Map"]
-    [ui/button {:icon  true
-                :label-position "left"
-                :color "teal"
-                :size "small"
-                :on-click #(rf/dispatch [:toggle-map-visiblity])}
-     [ui/icon {:name "picture"}]
-     "View Pictures"]))
-
-(defn card-modal-description [story]
-  [ui/segment {:stacked true}
-   (:description story)])
-
-(defn card-modal-truth [story]
-  [ui/popup
-   {:hoverable true
-    :trigger
-    (r/as-element
-     [ui/button {:as "div"
-                 :active false
-                 :label-position "right"
-                 :on-click #(rf/dispatch [:toggle-truth-story (:_key story)])}
-      [ui/button {:color (if @(rf/subscribe [:marked-story-truth? (:_key story)])
-                           "green"
-                           "grey")
-                  :active false}
-       [ui/icon {:name "check"}]
-       "Truth"]
-      [ui/label {:as "a"
-                 :basic true
-                 :color (if @(rf/subscribe [:marked-story-truth? (:_key story)])
-                          "green"
-                          "grey")
-                 :pointing "left"}
-       (count (:truth story))]])}
-   [ui/list {:vertical-align "middle"}
-    (for [u (:truth story)]
-      ^{:key (:_key u)}
-      [ui/list-item
-       [ui/image {:src "img/myAvatar.svg" :avatar true}]
-       [ui/list-content
-        [ui/list-header (:username u)]]])]])
-
-(defn card-modal-lie [story]
-  [ui/popup
-   {:hoverable true
-    :trigger
-    (r/as-element
-     [ui/button {:as "div"
-                 :label-position "right"
-                 :on-click #(rf/dispatch [:toggle-lie-story (:_key story)])}
-      [ui/button {:color (if @(rf/subscribe [:marked-story-lie? (:_key story)])
-                           "red"
-                           "grey")}
-       [ui/icon {:name "x"}]
-       "Lie"]
-      [ui/label {:as "a"
-                 :basic true
-                 :color (if @(rf/subscribe [:marked-story-lie? (:_key story)])
-                          "red"
-                          "grey")
-                 :pointing "left"}
-       (count (:lie story))]])}
-   [ui/list {:vertical-align "middle"}
-    (for [u (:lie story)]
-      ^{:key (:_key u)}
-      [ui/list-item
-       [ui/image {:src "img/myAvatar.svg" :avatar true}]
-       [ui/list-content
-        [ui/list-header (:username u)]]])]])
-
-(defn card-modal [story]
-  [ui/modal {:open @(rf/subscribe [:story-modal-visible?])}
-   [card-modal-header story]
-   [ui/modal-content {:scrolling true}
-    (if @(rf/subscribe [:story-map-visible?])
-      [card-modal-map story]
-      [card-modal-imgs story])
-    [ui/grid {:style {:margin-bottom "5px"}}
-     [ui/grid-column {:width 8
-                      :text-align "center"}
-      [card-modal-date story]]
-     [ui/grid-column {:width 8
-                      :text-align "center"}
-      [card-modal-location story]]]
-    [ui/modal-description
-     [card-modal-description story]
-     [ui/grid
-      [ui/grid-column {:width 8
-                       :text-align "center"}
-       [card-modal-truth story]]
-      [ui/grid-column {:width 8
-                       :text-align "center"}
-       [card-modal-lie story]]]]]
-   [ui/modal-actions
-    [ui/button {:primary true
-                :icon "x"
-                :content "Close"
-                :on-click #(rf/dispatch [:hide-story-modal])}]]])
+            [o2sn.helpers.stories :as helpers]))
 
 (defn card-likes-modal []
   [ui/modal {:open @(rf/subscribe [:story-like-modal-visible])
@@ -208,13 +32,14 @@
   [:div#news-card
    [ui/card {:color (get-in story [:category :color])}
     [ui/card-content
-     [ui/label {:corner "right"
-                :as "a"
-                :on-click #(rf/dispatch [:show-story-modal (:_key story)])
-                :icon
-                (r/as-element
-                 [ui/icon {:name "content"
-                           :link true}])}]
+     [ui/label
+      {:corner "right"
+       :as "a"
+       :on-click #(rf/dispatch [:story/set-current (:_key story) false])
+       :icon
+       (r/as-element
+        [ui/icon {:name "content"
+                  :link true}])}]
      [ui/label {:ribbon true
                 :color (get-in story [:category :color])}
       (get-in story [:category :name])]
@@ -223,9 +48,7 @@
       [ui/grid {:columns 16}
        [ui/grid-column {:width 7}
         [:span {:style {:font-size ".7rem"}}
-         (format-date (:datetime story))]]
-       #_[ui/grid-column {:width 7}
-          [:span {:style {:font-size ".7rem"}} (get-in story [:location :name])]]]]
+         (helpers/format-date (:datetime story))]]]]
      [ui/card-description (:description story)]]
     [ui/card-content {:extra true}
      [ui/grid {:vertical-align "middle"
@@ -253,7 +76,6 @@
                        :height "100%"}}
    [:div#news-cards
     [card-likes-modal]
-    [card-modal @(rf/subscribe [:current-story])]
     (let [stories @(rf/subscribe [:stories])]
       (if (seq stories)
         (for [story stories]

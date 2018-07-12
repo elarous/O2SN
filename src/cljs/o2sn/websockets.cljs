@@ -27,3 +27,6 @@
       (set! (.-onopen chan) #(js/console.log "Connection established"))
       (swap! conns assoc conn chan))
     (throw (js/Error. "WebSocket connection failed!"))))
+
+(defn close! [conn]
+  (.close (get @conns conn)))

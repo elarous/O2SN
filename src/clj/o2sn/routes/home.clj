@@ -12,8 +12,8 @@
   (GET "/" []
        (-> (home-page)
            (response/header "Content-Type" "text/html")))
-  (GET "/ws/notifs" []
-       notifs/notifs-handler)
+  (GET "/ws/notifs" req
+       (notifs/notifs-handler req))
   (GET "/docs" []
        (-> (response/ok (-> "docs/docs.md" io/resource slurp))
            (response/header "Content-Type" "text/plain; charset=utf-8"))))

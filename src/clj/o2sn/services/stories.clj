@@ -18,6 +18,9 @@
 (defn by-channel [chan-key]
   (ok (db/by-channel chan-key)))
 
+(defn by-key [story-key]
+  (ok (db/by-key story-key)))
+
 (defn claim-truth [story-key]
   (ok (db/saying-truth story-key)))
 

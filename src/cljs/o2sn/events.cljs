@@ -10,4 +10,5 @@
             o2sn.events.channels
             o2sn.events.profile
             o2sn.events.notifications
-            o2sn.events.notifications-history))
+            o2sn.events.notifications-history
+            o2sn.events.search))

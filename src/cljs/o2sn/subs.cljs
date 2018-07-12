@@ -9,4 +9,5 @@
             o2sn.subs.channels
             o2sn.subs.profile
             o2sn.subs.notifications
-            o2sn.subs.notifications-history))
+            o2sn.subs.notifications-history
+            o2sn.subs.search))

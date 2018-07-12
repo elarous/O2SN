@@ -13,7 +13,8 @@
             [o2sn.services.categories :as categories]
             [o2sn.services.profiles :as profiles]
             [o2sn.services.notifications :as notifs]
-            [o2sn.services.activities :as activities]))
+            [o2sn.services.activities :as activities]
+            [o2sn.services.search :as search]))
 
 (defn access-error [_ _]
   (unauthorized {:error "unauthorized"}))
@@ -261,6 +262,16 @@
       :summary "get the n latest user activities"
       (activities/get-last (str "users/" user-k) n)))
 
+  (context "/search" []
+    (GET "/stories/:value" req
+      :auth-rules authenticated?
+      :path-params [value :- s/Str]
+      (search/stories (str "users/" (:identity req)) value))
+
+    (GET "/users/:value" req
+      :auth-rules authenticated?
+      :path-params [value :- s/Str]
+      (search/users value)))
 
   (context "/api" []
     :tags ["thingie"]

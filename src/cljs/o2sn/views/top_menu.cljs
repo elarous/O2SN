@@ -3,7 +3,8 @@
             [re-frame.core :as rf]
             [secretary.core :as secretary]
             [o2sn.ui :as ui]
-            [o2sn.views.notifications :as notifications]))
+            [o2sn.views.notifications :as notifications]
+            [o2sn.views.search :as search]))
 
 (defn top-menu-sidebar-btn []
   [:div
@@ -17,9 +18,7 @@
    [:h3 "O2SN"]])
 
 (defn top-menu-search []
-  [:div
-   [ui/search {:class-name "top-menu-search"
-               :size "small"}]])
+  [search/search-input])
 
 (defn top-menu-feed []
   [ui/popup {:hoverable true

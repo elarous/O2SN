@@ -36,6 +36,14 @@
    :sidebar {:visible false}
    :user {:logged-in? false
           :current nil}
+   :search {:value ""
+            :content {:stories
+                      {:name "stories"
+                       :results []}
+                      :users
+                      {:name "users"
+                       :results []}}
+            :loading? false}
    :selected-channel ""
    :stories []
    :loading-stories false

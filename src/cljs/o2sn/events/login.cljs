@@ -74,7 +74,8 @@
             (assoc :checking-auth? false))
     :dispatch-n [[:set-active-page :home]
                  [:profile/load-profile (:_key resp)]
-                 [:notifs/get-notifs]]
+                 [:notifs/get-notifs]
+                 [:get-categories]]
     :notifs/create-ws nil}))
 
 (reg-event-db
@@ -99,11 +100,25 @@
 (reg-event-fx
  :validate-login-username
  (fn [{db :db} [_ username]]
+   {:timeout {:id :login-username
+              :event [:validating-login-username username]
+              :time 500}}))
+
+(reg-event-fx
+ :validating-login-username
+ (fn [{db :db} [_ username]]
    {:validate [:username username :login-form]
     :db (assoc-in db [:login-form :username :validating] true)}))
 
 (reg-event-fx
  :validate-login-password
+ (fn [{db :db} [_ password]]
+   {:timeout {:id :login-password
+              :event [:validating-login-password password]
+              :time 500}}))
+
+(reg-event-fx
+ :validating-login-password
  (fn [{db :db} [_ password]]
    {:validate [:password password :login-form]
     :db (assoc-in db [:login-form :password :validating] true)}))

@@ -1,10 +1,41 @@
 (ns o2sn.events.search
   (:require [ajax.core :as ajax]
             [day8.re-frame.http-fx]
+            [reagent.core :as r]
             [re-frame.core :refer [reg-event-fx
                                    reg-event-db
                                    reg-fx
+                                   dispatch
                                    debug]]))
+
+(defonce timeouts (r/atom {}))
+
+(reg-fx
+ :timeout
+ (fn [{:keys [id event time]}]
+   (when-some [to (get @timeouts id)]
+     (js/clearTimeout to)
+     (swap! timeouts dissoc id))
+   (when (some? event)
+     (swap! timeouts assoc id
+            (js/setTimeout
+             (fn []
+               (dispatch event))
+             time)))))
+
+(reg-fx
+ :timeout-n
+ (fn [{:keys [id events time]}]
+   (when-some [to (get @timeouts id)]
+     (js/clearTimeout to)
+     (swap! timeouts dissoc id))
+   (when (seq events)
+     (swap! timeouts assoc id
+            (js/setTimeout
+             (fn []
+               (doseq [event events]
+                 (dispatch event)))
+             time)))))
 
 (reg-event-fx
  :search/set-value
@@ -13,8 +44,10 @@
      {:db (-> db
               (assoc-in [:search :value] v)
               (assoc-in [:search :loading?] true))
-      :dispatch-n [[:search/find-stories v]
-                   [:search/find-users v]]}
+      :timeout-n {:id :search
+                  :events [[:search/find-stories v]
+                           [:search/find-users v]]
+                  :time 500}}
      {:db (assoc-in db [:search :value] v)})))
 
 (reg-event-fx

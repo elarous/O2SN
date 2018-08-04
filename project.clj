@@ -43,7 +43,8 @@
                  [com.arangodb/arangodb-java-driver "4.3.4"]
                  [day8.re-frame/http-fx "0.1.6"]
                  [com.draines/postal "2.0.2"]
-                 [com.cognitect/transit-clj "0.8.309"]]
+                 [com.cognitect/transit-clj "0.8.309"]
+                 [clj-http "3.9.1"]]
 
   :min-lein-version "2.0.0"
   :source-paths ["src/clj" "src/cljs" "src/cljc"]

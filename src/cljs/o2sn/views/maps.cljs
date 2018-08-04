@@ -4,8 +4,9 @@
             [o2sn.ui :as ui]))
 
 (defn extract-lat-lng [e]
-  (hash-map :lat (apply (-> e .-latLng .-lat) [])
-            :lng (apply (-> e .-latLng .-lng) [])))
+  (js/console.log e)
+  (hash-map :lat (.lat e)
+            :lng (.lng e)))
 
 (defn wrapped-map [{:keys [lat lng on-click]}]
   (let [map-class

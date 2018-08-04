@@ -124,7 +124,7 @@
 (reg-event-db
  :channels/loading-failure
  (fn [db [_ resp]]
-   (js/alert resp)
+   (js/console.log resp)
    db))
 
 (reg-event-fx

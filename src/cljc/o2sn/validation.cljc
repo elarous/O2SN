@@ -4,9 +4,7 @@
                     [clojure.string :as str])
      :cljs (:require [struct.core :as st]
                      [ajax.core :as ajax :refer [ajax-request]]
-                     [clojure.string :as str]
-                     [cljs.core.async :as a]))
-  #?(:cljs (:require-macros [cljs.core.async :refer [go]])))
+                     [clojure.string :as str])))
 
 ;; custom validators
 
@@ -124,7 +122,7 @@
     (failure-fn {:email "email is empty"})
     (let [err-ret {:email "email is not deliverable"}]
       (ajax-request
-       {:uri (str "https://api.trumail.io/v1/json/" email)
+       {:uri (str "https://api.trumail.io/v2/lookups/json?email=" email)
         :method :get
         :format (ajax/json-request-format)
         :response-format (ajax/json-response-format {:keywords? true})

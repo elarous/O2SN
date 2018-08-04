@@ -1,6 +1,22 @@
-{:production true
- ;;Twitter used as an example, replace these URIs with the OAuth provider of your choice
+{:dev false
  :request-token-uri "https://api.twitter.com/oauth/request_token"
  :access-token-uri "https://api.twitter.com/oauth/access_token"
  :authorize-uri "https://api.twitter.com/oauth/authenticate"
- :port 3000}
+ :port 3000
+ ;; when :nrepl-port is set the application starts the nREPL server on load
+ :nrepl-port 7000
+ :database {:host "localhost"
+            :port 8529
+            :user "root"
+            :password "123456"
+            :dbname "o2sn"}
+ :server {:addr "localhost"
+          :port 3000}
+ :email-config {:email "elarbaouioussama@gmail.com"
+                :host "smtp.gmail.com"
+                :user "elarbaouioussama"
+                :pass "nightmare0dream"
+                :ssl "465"}
+ :cloudinary {"cloud_name" "dofhpvqpj"
+              "api_key" "889295516416771"
+              "api_secret" "gjfsEAW5CYtGeVBSLGpXZYaNrR8"}}

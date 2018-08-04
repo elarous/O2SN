@@ -91,8 +91,8 @@
                  :processing? false
                  :signed-up? false}
    :new-story {:title ""
-               :map {:lat 0
-                     :lng 0}
+               :map {:lat 32.053250726144796
+                     :lng -7.407108638525983} ;; el kelaa cords
                :description ""
                :images []
                :category ""

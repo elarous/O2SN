@@ -40,7 +40,7 @@
                 :on-click #(rf/dispatch [:story/previous-img])}]]
      [ui/grid-column {:width 14
                       :text-align "center"}
-      [ui/image {:src (str "img/" @(rf/subscribe [:story/img]))
+      [ui/image {:src @(rf/subscribe [:story/img])
                  :style {:display "inline"}}]]
      [ui/grid-column {:width 1
                       :vertical-align "middle"}

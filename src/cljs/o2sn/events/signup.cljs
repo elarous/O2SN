@@ -36,11 +36,25 @@
 (reg-event-fx
  :validate-signup-email
  (fn [{db :db} [_ email]]
+   {:timeout {:id :signup-email
+              :event [:validating-signup-email email]
+              :time 500}}))
+
+(reg-event-fx
+ :validating-signup-email
+ (fn [{db :db} [_ email]]
    {:validate [:email email]
     :db (assoc-in db [:signup-form :email :validating] true)}))
 
 (reg-event-fx
  :validate-signup-email-ajax
+ (fn [{db :db} [_ email]]
+   {:timeout {:id :signup-email-ajax
+              :event [:validating-signup-email-ajax email]
+              :time 500}}))
+
+(reg-event-fx
+ :validating-signup-email-ajax
  (fn [{db :db} [_ email]]
    {:validate [:email-ajax email]
     :db (assoc-in db [:signup-form :email :validating] true)}))
@@ -63,11 +77,25 @@
 (reg-event-fx
  :validate-signup-username
  (fn [{db :db} [_ username]]
+   {:timeout {:id :signup-username
+              :event [:validating-signup-username username]
+              :time 500}}))
+
+(reg-event-fx
+ :validating-signup-username
+ (fn [{db :db} [_ username]]
    {:validate [:username username :signup-form]
     :db (assoc-in db [:signup-form :username :validating] true)}))
 
 (reg-event-fx
  :validate-signup-username-ajax
+ (fn [{db :db} [_ username]]
+   {:timeout {:id :signup-username-ajax
+              :event [:validating-signup-username-ajax username]
+              :time 500}}))
+
+(reg-event-fx
+ :validating-signup-username-ajax
  (fn [{db :db} [_ username]]
    {:validate [:username-ajax username :signup-form]
     :db (assoc-in db [:signup-form :username :validating] true)}))
@@ -90,6 +118,13 @@
 (reg-event-fx
  :validate-signup-password
  (fn [{db :db} [_ password]]
+   {:timeout {:id :signup-password
+              :event [:validating-signup-password password]
+              :time 500}}))
+
+(reg-event-fx
+ :validating-signup-password
+ (fn [{db :db} [_ password]]
    {:validate [:password password :signup-form]
     :db (assoc-in db [:signup-form :password :validating] true)}))
 
@@ -110,6 +145,14 @@
 
 (reg-event-fx
  :validate-signup-repassword
+ (fn [{db :db} [_ repassword]]
+   {:timeout {:id :signup-repassword
+              :event [:validating-signup-repassword repassword]
+              :time 500}}))
+
+
+(reg-event-fx
+ :validating-signup-repassword
  (fn [{db :db} [_ repassword]]
    {:validate [:repassword repassword (get-in db [:signup-form :password :value])]
     :db (assoc-in db [:signup-form :repassword :validating] true)}))
@@ -155,7 +198,6 @@
 (reg-event-db
  :signup-failure
  (fn [db [_ {resp :response}]]
-   (println "failed : " resp)
    (-> db
        (assoc-in [:signup-form :processing?] false)
        (assoc-in [:signup-form :errors?] true)

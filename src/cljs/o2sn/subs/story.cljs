@@ -12,8 +12,9 @@
  :story/img
  (fn [db _]
    (let [story (get-in db [:story :current])]
-     (nth (:images story)
-          (get-in db [:story :images :current])))))
+     (->> (get-in db [:story :images :current])
+          (nth (:images story))
+          (str "data:image/*;base64,")))))
 
 (reg-sub
  :story/marked-truth?

@@ -6,42 +6,65 @@
       <title>Welcome to o2sn</title>
   </head>
   <body>
-    
     <div id="app">
-      <div class="container-fluid">
-        <div class="card-deck">
-          <div class="card-block">
-            <h4>Welcome to o2sn</h4>
-            <p>If you're seeing this message, that means you haven't yet compiled your ClojureScript!</p>
-            <p>Please run <code>lein figwheel</code> to start the ClojureScript compiler and reload the page.</p>
-            <h4>For better ClojureScript development experience in Chrome follow these steps:</h4>
-            <ul>
-              <li>Open DevTools
-              <li>Go to Settings ("three dots" icon in the upper right corner of DevTools > Menu > Settings F1 > General > Console)
-              <li>Check-in "Enable custom formatters"
-              <li>Close DevTools
-              <li>Open DevTools
-            </ul>
-            <p>See <a href="http://www.luminusweb.net/docs/clojurescript.md">ClojureScript</a> documentation for further details.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <style>
+         #splash {
+             padding: 0px;
+             padding-top: 80px;
+             margin: 0px;
+             height: 100%;
+             width: 100%;
+             top: 0px;
+             left: 0px;
+             position: fixed;
+             background-color :white;
+             text-align: center;
+         }
+         #splash-title {
+            color : #26A69A;
+             font-size: 140px;
+             margin-bottom: 15px;
+         }
+         #splash-description {
+             color : #BDBDBD;
+             font-size: 80px;
+             margin-bottom: 80px;
+         }
+         .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+             border-top: 16px solid #26A69A; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            display: block;
+             margin: auto;
+          }
 
+          @keyframes spin {
+           0% { transform: rotate(0deg); }
+           100% { transform: rotate(360deg);}
+          }
+        </style>
+        <div id="splash">
+            <h1 id="splash-title">
+                O2SN
+            </h1>
+            <h2 id="splash-description">
+                Open Source News Social Network
+            </h2>
+            <i class="loader">
+
+            </i>
+        </div>
+    </div>
     <!-- scripts and styles -->
-    <!--  {% style "/assets/bootstrap-material-design/css/bootstrap-material-design.min.css" %} -->
-    <!-- {% style "/assets/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css" %} -->
+
     {% style "/css/screen.css" %}
     {% style "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.12/semantic.min.css" %}
     {% style "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" %}
 
-    <!--  {% script "/assets/jquery/jquery.min.js" %}
-    {% script "/assets/popper.js/dist/umd/popper.min.js" %}
-    {% script "/assets/font-awesome/svg-with-js/js/fontawesome.min.js" %}
-    {% script "/assets/bootstrap-material-design/js/bootstrap-material-design.min.js" %}
-    -->
     {% script "/assets/tether/dist/js/tether.min.js" %}
-    <!-- "/assets/bootstrap/css/bootstrap.min.css" "/assets/bootstrap/js/bootstrap.min.js" -->
     <script type="text/javascript">
         var csrfToken = "{{csrf-token}}";
     </script>

@@ -11,13 +11,14 @@
     background-color : #004D40;
 }
 
+
+
 body {
     height: 100vh !important;
     margin: 0px;
     padding: 0px;
     border : 0px;
 }
-
 
 /* so that the form container take the full height */
 /* body, */
@@ -78,6 +79,7 @@ body > #app > div > div > div.signup-form {
     justify-content: center;
     flex-wrap: wrap;
     height: 100%;
+    align-items : flex-start;
 }
 
 #news-card {

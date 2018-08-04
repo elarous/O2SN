@@ -6,20 +6,29 @@
             [o2sn.views.maps :as m]
             [o2sn.views.operation :as op]))
 
+(defonce title-v (r/atom ""))
+(defonce desc-v (r/atom ""))
+
 (defn title []
   [ui/input {:type "text"
              :fluid true
              :required true
              :placeholder "Story's Title"
-             :value @(rf/subscribe [:new-story/title])
-             :on-change #(rf/dispatch [:new-story/set-title (-> % .-target .-value)])}])
+             :value @title-v
+             :on-change #(reset! title-v (-> % .-target .-value))
+             :on-blur #(rf/dispatch [:new-story/set-title @title-v])}])
 
 (defn location-map []
   [:div#map
    [m/wrapped-map {:lat @(rf/subscribe [:new-story/marker-lat])
                    :lng @(rf/subscribe [:new-story/marker-lng])
-                   :on-click #(rf/dispatch [:new-story/move-marker
-                                            (m/extract-lat-lng %)])}]])
+                   :on-click (fn [e]
+                               (when-let [latLng (goog.object/get e "latLng")]
+                                 (let [lat-fn (goog.object/get latLng "lat")
+                                       lng-fn (goog.object/get latLng "lng")]
+                                   (rf/dispatch [:new-story/move-marker
+                                                 (hash-map :lat (lat-fn)
+                                                           :lng (lng-fn))]))))}]])
 
 (defn description []
   [ui/form
@@ -28,8 +37,9 @@
                  :rows 2
                  :style {:min-height "50px"
                          :width "100%"}
-                 :value @(rf/subscribe [:new-story/desc])
-                 :on-change #(rf/dispatch [:new-story/set-desc (-> % .-target .-value)])}]])
+                 :value @desc-v
+                 :on-change #(reset! desc-v (-> % .-target .-value))
+                 :on-blur #(rf/dispatch [:new-story/set-desc @desc-v])}]])
 
 (defn- add-img [img file]
   (rf/dispatch [:new-story/add-img {:img img :file file}]))
@@ -123,7 +133,9 @@
                 :size "large"
                 :content "Reset"
                 :icon "undo"
-                :on-click #(rf/dispatch [:new-story/reset])}]]
+                :on-click #(do (rf/dispatch [:new-story/reset])
+                               (reset! title-v "")
+                               (reset! desc-v ""))}]]
    [ui/grid-column {:width "1"}]])
 
 (defn saving-segment []

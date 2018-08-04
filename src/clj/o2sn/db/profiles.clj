@@ -1,14 +1,14 @@
 (ns o2sn.db.profiles
   (:require [o2sn.db.core :as db]))
 
-
-
 (defn get-profile [user-k]
   (let [user-id (str "users/" user-k)
         q-str "let u = document(@userid)
                let p = document(u.profile)
               return  merge(p,
-              {\"username\" : u.username, \"email\" : u.email})"]
+              {\"username\" : u.username,
+               \"email\" : u.email,
+               \"avatar\" : u.avatar})"]
     (-> (db/query! q-str {:userid user-id})
         first)))
 
@@ -52,5 +52,13 @@
         (update :truths #(java.lang.Math/round %))
         (update :lies #(java.lang.Math/round %)))))
 
-#_(get-stats "7")
-#_(get-rating 1)
+(defn create-profile [{:keys [fullname country age gender]}]
+  (db/with-coll :profiles
+    (-> (db/insert-doc! {:fullname fullname
+                         :country country
+                         :age age
+                         :gender gender}
+                        {:return-new true}
+                        [:new])
+        :new
+        db/ednize)))

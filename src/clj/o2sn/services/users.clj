@@ -9,7 +9,8 @@
             [o2sn.validation :as v]
             [postal.core :as email]
             [o2sn.layout :as layout]
-            [o2sn.config :as config]))
+            [o2sn.config :as config]
+            [o2sn.db.profiles :as profiles]))
 
 (def email-config (:email-config config/env))
 (def host (str (:addr (:server config/env))
@@ -80,6 +81,12 @@
 (defn email-exists? [email]
   (ok (db/email-exists? email)))
 
+(defn create-profile [user]
+  (:_id (profiles/create-profile {:fullname (:username user)
+                                  :country "ma"
+                                  :age 30
+                                  :gender "m"})))
+
 (defn signup-user [user]
   (let [v (v/validate-signup user)]
     (if (nil? (first v)) ;; no validation errors
@@ -94,7 +101,9 @@
         (do (db/create-user!
              (-> (update user :password hashers/derive)
                  (assoc :hash (send-confirm! (:email user)))
-                 (assoc :activated false)))
+                 (assoc :activated false)
+                 (assoc :avatar "default.svg")
+                 (assoc :profile (create-profile user))))
             (ok {:results "signed up successfully"})))
       (let [first-entry (-> v first first) ;; in case of validation errors
             k (first first-entry)

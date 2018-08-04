@@ -94,9 +94,10 @@
 (reg-event-db
  :profile/load-activities-failure
  (fn [db [_ resp]]
-   (js/console.log resp)
-   db))
-
+   (js/console.log  resp)
+   (-> db
+       (assoc-in [:profile :activities] [])
+       (assoc-in [:profile :loading? :activities] false))))
 
 (reg-event-fx
  :profile/load-rating
@@ -117,12 +118,6 @@
    (-> db
        (assoc-in [:profile :rating] resp)
        (assoc-in [:profile :loading? :rating] false))))
-
-(reg-event-db
- :profile/load-activities-failure
- (fn [db [_ resp]]
-   (js/console.log resp)
-   db))
 
 
 

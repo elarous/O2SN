@@ -124,8 +124,6 @@
 (defn init! []
   (rf/dispatch-sync [:initialize-db])
   (rf/dispatch-sync [:check-authenticated])
-  (rf/dispatch [:get-categories])
-  
   (load-interceptors!)
   (fetch-docs!)
   (hook-browser-navigation!)

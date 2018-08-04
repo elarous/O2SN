@@ -4,7 +4,8 @@
             [secretary.core :as secretary]
             [o2sn.ui :as ui]
             [o2sn.views.maps :as m]
-            [o2sn.views.operation :as op]))
+            [o2sn.views.operation :as op]
+            [goog.object]))
 
 (defn saving-view []
   (op/operation-segment
@@ -25,8 +26,17 @@
   [:div#map
    [m/wrapped-map {:lat 32.053250726144796 ;; el kelaa cords
                    :lng -7.407108638525983
-                   :on-click #(rf/dispatch [:channels/select-point
-                                            (m/extract-lat-lng %)])}]])
+                   :on-click (fn [e]
+                               (js/console.log "e : " e)
+                               (when-let [latLng (goog.object/get e "latLng")]
+                                 (js/console.log "latLng : " latLng)
+                                 (let [lat-fn (goog.object/get latLng "lat")
+                                       lng-fn (goog.object/get latLng "lng")]
+                                   (js/console.log "lat-fn : " lat-fn)
+                                   (js/console.log "lng-fn : " lng-fn)
+                                   (rf/dispatch [:channels/select-point
+                                                 (hash-map :lat (lat-fn)
+                                                           :lng (lng-fn))]))))}]])
 
 (defn location-view []
   [:div
@@ -71,42 +81,49 @@
 
 (defn my-channels-tab []
   [:div#my-channels-tab
-   (doall
-    (for [chan @(rf/subscribe [:channels/all])
-          :let [color @(rf/subscribe [:channels/color (:type chan)])]]
-      ^{:key (:_key chan)}
-      [:div {:style {:margin-top "15px"}}
-       [ui/confirm {:open
-                    @(rf/subscribe [:channels/confirm-visible? (:_key chan)])
-                    :on-confirm #(do (rf/dispatch [:channels/delete (:_key chan)])
-                                     (rf/dispatch [:channels/cancel-delete (:_key chan)]))
-                    :on-cancel #(rf/dispatch [:channels/cancel-delete (:_key chan)])}]
-       [ui/segment {:color color
-                    :attached "top"
-                    :style {:min-width "250px"}}
-        [ui/header {:as "h4"
-                    :color color}
-         [ui/icon {:name "tv"}]
-         (:name chan)]
-        [ui/divider]
-        [ui/grid
-         [ui/grid-column {:width 8
-                          :text-align "center"}
-          [ui/popup {:trigger (r/as-element
-                               [ui/label {:color color}
-                                (:type chan)])
-                     :content "Location Type"}]]
-         [ui/grid-column {:width 8
-                          :text-align "center"}
-          [ui/popup {:trigger (r/as-element [ui/label (:subscribers chan)])
-                     :content "Number of Subscribers"}]]]]
-       [ui/button {:attached "bottom"
-                   :color color
-                   :icon "trash"
-                   :size "mini"
-                   :content "Delete"
-                   :on-click
-                   #(rf/dispatch [:channels/confirm-delete (:_key chan)])}]]))])
+   (let [chans @(rf/subscribe [:channels/all])]
+     (if (seq chans)
+       (doall
+        (for [chan chans
+              :let [color @(rf/subscribe [:channels/color (:type chan)])]]
+          ^{:key (:_key chan)}
+          [:div {:style {:margin-top "15px"}}
+           [ui/confirm {:open
+                        @(rf/subscribe [:channels/confirm-visible? (:_key chan)])
+                        :on-confirm #(do (rf/dispatch [:channels/delete (:_key chan)])
+                                         (rf/dispatch [:channels/cancel-delete (:_key chan)]))
+                        :on-cancel #(rf/dispatch [:channels/cancel-delete (:_key chan)])}]
+           [ui/segment {:color color
+                        :attached "top"
+                        :style {:min-width "250px"}}
+            [ui/header {:as "h4"
+                        :color color}
+             [ui/icon {:name "tv"}]
+             (:name chan)]
+            [ui/divider]
+            [ui/grid
+             [ui/grid-column {:width 8
+                              :text-align "center"}
+              [ui/popup {:trigger (r/as-element
+                                   [ui/label {:color color}
+                                    (:type chan)])
+                         :content "Location Type"}]]
+             [ui/grid-column {:width 8
+                              :text-align "center"}
+              [ui/popup {:trigger (r/as-element [ui/label (:subscribers chan)])
+                         :content "Number of Subscribers"}]]]]
+           [ui/button {:attached "bottom"
+                       :color color
+                       :icon "trash"
+                       :size "mini"
+                       :content "Delete"
+                       :on-click
+                       #(rf/dispatch [:channels/confirm-delete (:_key chan)])}]]))
+       [ui/segment
+        [ui/container {:text-align "center"}
+         [ui/header {:as "h2"
+                     :color "grey"
+                     :content "You Are Not Subscribed To Any Channel Yet !"}]]]))])
 
 (defn channels-panel []
   (if @(rf/subscribe [:channels/saving-visible?])

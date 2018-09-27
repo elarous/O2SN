@@ -15,7 +15,7 @@
               :email-config {:email "elarbaouioussama@gmail.com"
                              :host "smtp.gmail.com"
                              :user "elarbaouioussama"
-                             :pass "nightmare0dream"
+                             :pass "" 
                              :ssl "465"}
               :cloudinary {"cloud_name" "dofhpvqpj"
                            "api_key" "889295516416771"

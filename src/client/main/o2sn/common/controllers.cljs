@@ -29,3 +29,9 @@
                            (when (= handler :profile)
                              (:user route-params)))
                  :start [:profile/load-by-user]})
+
+(reg-controller :list-channels
+                {:params (fn [{:keys [handler route-params]}]
+                           (when (= handler :list-channels)
+                             true))
+                 :start [:channels/load]})

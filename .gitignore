@@ -12,4 +12,8 @@ pom.xml.asc
 .lein-failures
 .nrepl-port
 dev-config.edn
-test-config.edn
+test-config.edn	
+/.shadow-cljs/
+.nrepl-history
+/node_modules/
+/resources/public/js/cljs-runtime/

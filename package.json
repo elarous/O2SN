@@ -1,0 +1,33 @@
+{
+    "name": "o2sn",
+    "version": "1.0.0",
+    "description": "generated using Luminus version \"2.9.12.49\"",
+    "main": "index.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/elarouss/O2SN.git"
+    },
+    "author": "",
+    "devDependencies": {},
+    "dependencies": {
+        "create-react-class": "^15.6.3",
+        "react": "^16.4.2",
+        "react-dom": "^16.4.2",
+        "react-google-maps": "^9.4.5",
+        "react-motion": "^0.5.2",
+        "semantic-ui-react": "^0.82.1",
+        "shadow-cljs": "^2.4.33",
+        "xregexp": "^4.2.0"
+    },
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/elarouss/O2SN/issues"
+    },
+    "homepage": "https://github.com/elarouss/O2SN#readme"
+}

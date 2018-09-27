@@ -17,3 +17,4 @@ test-config.edn
 .nrepl-history
 /node_modules/
 /resources/public/js/cljs-runtime/
+/resources/public/js/

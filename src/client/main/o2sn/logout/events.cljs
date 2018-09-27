@@ -4,10 +4,7 @@
             [re-frame.core :refer [path]]
             [ajax.core :as ajax]))
 
-(reg-event-db
+(reg-event-fx
  :logout/logout
- [(path :user)]
- (fn [user _]
-   (-> user
-       (assoc :current nil)
-       (assoc :token nil))))
+ (fn [_ _]
+   {:dispatch [:reset]}))

@@ -12,7 +12,9 @@
 (reg-event-db
  :reset
  (fn [db path]
-   (assoc-in db path (get-in default-db path))))
+   (if (empty? path)
+     default-db
+     (assoc-in db path (get-in default-db path)))))
 
 (reg-event-fx
  :common/load-categories

@@ -1,7 +1,8 @@
 (ns o2sn.topbar.views
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
-            ["semantic-ui-react" :as ui]))
+            ["semantic-ui-react" :as ui]
+            [o2sn.notifications.views :refer [menu-notifications]]))
 
 ;; search components
 
@@ -79,9 +80,9 @@
                 :position "bottom right"
                 :style {:height "auto"
                         :min-width "260px"}
-                :open false
-                :on-open identity
-                :on-close identity
+                ;; :open @(rf/subscribe [:topbar/notifs-open?])
+                ;; :on-open #(rf/dispatch [:notifs/get-unreads])
+                ;; :on-close identity
                 :trigger
                 (r/as-element
                  [:span.menu-action
@@ -92,8 +93,8 @@
                     :color "yellow"
                     :inverted true
                     :circular true
-                    :on-click identity}]])}
-   #_[notifications/menu-notifications]])
+                    :on-click #(rf/dispatch [:navigate :notifications])}]])}
+   [menu-notifications]])
 
 (defn top-menu-messages []
   [:> ui/Popup {:hoverable true
@@ -103,7 +104,8 @@
                           [:span.menu-action
                            [:> ui/Icon {:name "envelope"
                                         :size "large"
-                                        :link true}]])}
+                                        :link true
+                                        :on-click #(rf/dispatch [:notifs/connect-ws])}]])}
    [:> ui/Feed
     [:> ui/Feed.Event {:image "img/myAvatar.svg"
                        :content "my first message"}]

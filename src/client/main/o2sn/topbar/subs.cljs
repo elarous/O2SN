@@ -21,3 +21,8 @@
  :topbar/add-open?
  (fn [db _]
    (get-in db [:topbar :add-menu :open?])))
+
+(reg-sub
+ :topbar/notifs-open?
+ (fn [db _]
+   (get-in db [:topbar :notifications :open?])))

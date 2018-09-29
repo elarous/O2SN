@@ -14,4 +14,5 @@
                  "/messages" :messages
                  "/friends" :friends
                  "/settings" :settings
-                 "/operation" :operation}])
+                 "/operation" :operation
+                 "/notifications" :notifications}])

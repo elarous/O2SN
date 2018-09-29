@@ -3,7 +3,6 @@
             [re-frame.core :as rf]
             [kee-frame.core :as k]
             [o2sn.validation.validation]
-
             [o2sn.common.routes :refer [routes]]
             [o2sn.common.db :refer [default-db]]
             [o2sn.common.effects]
@@ -42,12 +41,19 @@
             [o2sn.profile.subs]
             [o2sn.profile.events]
             [o2sn.profile.views :refer [profile-page]]
+            [o2sn.notifications.views :refer [notifications-page
+                                              notifications-alert]]
+            [o2sn.notifications.events]
+            [o2sn.notifications.subs]
+            [o2sn.notifications.effects]
             [o2sn.dummy-effects]))
+
 
 (defn normal-page [page-contents]
   [:div
    [main-menu]
-   [side-bar page-contents]])
+   [side-bar page-contents]
+   [notifications-alert]])
 
 (defn full-page [page-contents]
   [:div
@@ -70,6 +76,7 @@
    :friends [normal-page [:div "my friends"]]
    :settings [normal-page [:div "my settings"]]
    :operation [normal-page [operation-page]]
+   :notifications [normal-page [notifications-page]]
    :login [full-page [login-form]]
    :signup [full-page [signup-form]]
    nil [full-page [:div "Page Not Found"]]])

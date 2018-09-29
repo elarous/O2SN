@@ -1,7 +1,8 @@
 (ns o2sn.common.db)
 
 (def default-db
-  {:server "http://localhost:3000"
+  {:server {:host "localhost"
+            :port 3000}
    :user {:current nil
           :token nil
           :checking-auth? false}
@@ -54,7 +55,8 @@
                          :msg "Error message"}
                  :processing? false
                  :signed-up? false}
-   :topbar {:add-menu {:open? false}}
+   :topbar {:add-menu {:open? false}
+            :notifications {:open? false}}
    :sidebar {:visible? false}
    :search {:value ""
             :content {:stories
@@ -121,4 +123,22 @@
              :loading? {:infos false
                         :stats false
                         :activities false
-                        :rating false}}})
+                        :rating false}}
+   :notifications {:all []
+                   :unreads []
+                   :alerts [{:_key "1"
+                             :by {:avatar ""
+                                  :name "soufiane"
+                                  :_key "3"}
+                             :header "New Like"
+                             :action "Likes"
+                             :target {:title "A Very good story to tell"
+                                      :_key "23423"}}
+                            {:_key "2"
+                             :by {:avatar ""
+                                  :name "nadal"
+                                  :_key "1"}
+                             :header "New Dislike"
+                             :action "Dislikes"
+                             :target {:title "A Very bad story to tell"
+                                      :_key "23423"}}]}})

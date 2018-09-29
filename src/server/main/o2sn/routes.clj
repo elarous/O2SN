@@ -274,10 +274,15 @@
       (search/users value)))
 
   (context "/images" []
-           (GET "/get/:img-k" req
-                :auth-rules authenticated?
-                :path-params [img-k :- s/Str]
-                (images/get (str "images/" img-k))))
+    (GET "/get/:img-k" req
+      :auth-rules authenticated?
+      :path-params [img-k :- s/Str]
+      (images/get (str "images/" img-k))))
+
+  (context "/ws" []
+    (GET "/notifs/:user-k" req
+      :path-params [user-k :- s/Str]
+      (notifs/notifs-handler req user-k)))
 
   (context "/api" []
     :tags ["thingie"]

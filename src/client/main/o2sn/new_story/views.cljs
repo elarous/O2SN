@@ -37,9 +37,7 @@
                    :message @(rf/subscribe [:new-story/desc-error])
                    :path-to-ctrl [:new-story :description]}]
      [:> ui/TextArea
-      {:fluid true
-       :auto-height true
-       :icon-position "left"
+      {:auto-height true
        :rows 2
        :style {:min-height "50px"
                :width "100%"}

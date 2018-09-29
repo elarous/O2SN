@@ -111,7 +111,7 @@
  (fn [{db :db} [story-k]]
    {:http-xhrio {:method :get
                  :uri (str "/stories/story/" story-k "/toggle/truth")
-                 :on-success [:story/toggle-truth-lie-success story-k]
+                 :on-success [:story/toggle-truth-lie-success story-k :truth]
                  :format (ajax/text-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})}}))
 
@@ -121,35 +121,36 @@
  (fn [{db :db} [story-k]]
    {:http-xhrio {:method :get
                  :uri (str "/stories/story/" story-k "/toggle/lie")
-                 :on-success [:story/toggle-truth-lie-success story-k]
+                 :on-success [:story/toggle-truth-lie-success story-k :lie]
                  :format (ajax/text-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})}}))
 
-(reg-event-db
+(reg-event-fx
  :story/toggle-truth-lie-success
- (fn [db [story-k resp]]
-   (let [user (get-in db [:user :current])
-         stories (get-in db [:stories :all])
-         story (some #(and (= (:_key %) story-k) %) stories)
-         stories-without-target (remove #(= (:_key %) story-k) stories)
-         remove-fn (fn [coll]
-                     (remove #(= (:_key %) (:_key user)) coll))
+ (fn [{db :db} [story-k type resp]]
+   {:db (let [user (get-in db [:user :current])
+             stories (get-in db [:stories :all])
+             story (some #(and (= (:_key %) story-k) %) stories)
+             stories-without-target (remove #(= (:_key %) story-k) stories)
+             remove-fn (fn [coll]
+                         (remove #(= (:_key %) (:_key user)) coll))
 
-         s1 (when (:truth resp)
-              (-> story
-                  (update :truth conj user)
-                  (update :lie #(remove-fn %))))
-         s2 (when (:lie resp)
-              (-> story
-                  (update :lie conj user)
-                  (update :truth #(remove-fn %))))
-         s3 (when-not (or s1 s2)
-              (-> story
-                  (update :truth #(remove-fn %))
-                  (update :lie #(remove-fn %))))
-         result (merge (or s1 s2 s3 story)
-                       {:images (get-in db [:story :current :images])})]
+             s1 (when (:truth resp)
+                  (-> story
+                      (update :truth conj user)
+                      (update :lie #(remove-fn %))))
+             s2 (when (:lie resp)
+                  (-> story
+                      (update :lie conj user)
+                      (update :truth #(remove-fn %))))
+             s3 (when-not (or s1 s2)
+                  (-> story
+                      (update :truth #(remove-fn %))
+                      (update :lie #(remove-fn %))))
+             result (merge (or s1 s2 s3 story)
+                           {:images (get-in db [:story :current :images])})]
 
-     (-> db
-         (assoc-in [:stories :all] (conj stories-without-target result))
-         (assoc-in [:story :current] result)))))
+         (-> db
+             (assoc-in [:stories :all] (conj stories-without-target result))
+             (assoc-in [:story :current] result)))
+    :notifs/send {:type type :target (str "stories/" story-k)}}))

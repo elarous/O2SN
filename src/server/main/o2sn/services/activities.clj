@@ -3,7 +3,9 @@
             [o2sn.db.channels :as chans]
             [o2sn.db.users :as users]
             [o2sn.db.stories :as stories]
+            [o2sn.services.notifications :as notifs]
             [ring.util.http-response :refer :all]))
+
 
 (defn new-story-users [activity]
   (->> (:channels activity)
@@ -52,7 +54,8 @@
         users (->> (new-story-users activity)
                    (remove #{cause-k}))]
     (when (seq users)
-      (db/relevant-to-all (:_key activity) users))
+      (db/relevant-to-all (:_key activity) users)
+      (notifs/notify activity users))
     activity))
 
 (defmethod add-activity :like-dislike
@@ -64,7 +67,8 @@
         users (->> (like-dislike-users activity)
                    (remove #{cause-k}))]
     (when (seq users)
-      (db/relevant-to (:_key activity) (first users)))
+      (db/relevant-to (:_key activity) (first users))
+      (notifs/notify activity users))
     activity))
 
 (defmethod add-activity :truth-lie
@@ -76,7 +80,8 @@
         users  (->> (truth-lie-users activity)
                       (remove #{cause-k}))]
     (when (seq users)
-      (db/relevant-to-all (:_key activity) users))
+      (db/relevant-to-all (:_key activity) users)
+      (notifs/notify activity users))
     activity))
 
 (defn unreads [user-id]

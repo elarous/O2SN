@@ -111,10 +111,8 @@
               (assoc-in [:login-form :processing?] false)
               (assoc-in [:user :checking-auth?] false))
       :navigate-to [:home]
-      ;; :dispatch-n [[:profile/load-profile (:_key resp)]
-      ;;              [:notifs/get-notifs]
-      ;;              [:get-categories]]
-      #_:notifs/create-ws #_nil})))
+      :dispatch-n [[:notifs/connect-ws]
+                   [:notifs/get-unreads]]})))
 
 (reg-event-db
  :login/fail

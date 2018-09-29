@@ -6,13 +6,13 @@
             [manifold.bus :as bus]
             [cognitect.transit :as transit]
             [o2sn.db.channels :as chans-db]
-            [o2sn.services.activities :as activities]
             [o2sn.db.users :as users]
             [o2sn.db.stories :as stories]
             [ring.util.http-response :refer :all])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
-(def channels (bus/event-bus))
+(def users-chans (bus/event-bus))
+
 
 (def non-websocket-request
   {:status 400
@@ -31,19 +31,6 @@
     (transit/write writer data)
     (.toString out)))
 
-(defn- get-channels [activity]
-  (let [cause-k  (second (clojure.string/split
-                          (:by activity)
-                          #"/"))
-        users-ks (case (keyword (:type activity))
-                   :new-story (activities/new-story-users activity)
-                   (:like :dislike) (activities/like-dislike-users activity)
-                   (:truth :lie) (activities/truth-lie-users activity))]
-
-    (->> users-ks
-         (remove #{cause-k})
-         (map #(str "user_" %)))))
-
 (defn- fetch-fields [msg]
   (-> msg
       (update :by
@@ -54,7 +41,16 @@
                          #"/"))))
       (update :target stories/by-id)))
 
-(defn notifs-handler [req]
+
+(defn notify [notif users]
+  (println "Notify : " users)
+  (println "Message : " notif)
+  (doseq [user-chan (map #(str "user_" %) users)]
+    (bus/publish! users-chans user-chan (-> notif
+                                            fetch-fields
+                                            clj->transit))))
+
+(defn notifs-handler [req user-k]
   (d/let-flow
    [conn (d/catch
           (http/websocket-connection req)
@@ -63,19 +59,9 @@
      non-websocket-request
      (do
        (s/connect
-        (bus/subscribe channels (str "user_" (:identity req)))
+        (bus/subscribe users-chans (str "user_" user-k))
         conn)
        (s/consume
-        #(let [msg (transit->clj %)
-               activity (-> (assoc msg :by (str "users/" (:identity req)))
-                            activities/add-activity)
-               transit-activity (-> activity
-                                  fetch-fields
-                                  clj->transit)]
-           (doseq [chan (get-channels activity)]
-             (bus/publish!
-              channels
-              chan
-              transit-activity)))
+        #(println "Websocket Msg received :" %)
         conn)
        (ok "Notications WebSocket Connected")))))

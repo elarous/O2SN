@@ -12,7 +12,9 @@
             [o2sn.db.locations :as locations]
             [o2sn.config :as config]
             [o2sn.maps :as m]
-            [byte-streams :as bs])
+            [o2sn.services.activities :as activities]
+            [byte-streams :as bs]
+            [clojure.string :as str])
   (:import java.time.Instant
            java.util.Base64))
 
@@ -35,28 +37,36 @@
   (ok (db/owner story-key)))
 
 (defn toggle-like [story-k user-k]
-  (ok (db/toggle-like! story-k user-k)))
+  (let [toggle-map (db/toggle-like! story-k user-k)]
+    (when (:liked toggle-map)
+      (activities/add-activity {:type :like
+                                :target (str "stories/" story-k)
+                                :by (str "users/" user-k)}))
+    (ok toggle-map)))
 
 (defn toggle-dislike [story-k user-k]
-  (ok (db/toggle-dislike! story-k user-k)))
-
-(defn unlike [story-k user-k]
-  (ok (db/remove-like! story-k user-k)))
-
-(defn undislike [story-k user-k]
-  (ok (db/remove-dislike! story-k user-k)))
+  (let [toggle-map (db/toggle-dislike! story-k user-k)]
+    (when (:disliked toggle-map)
+      (activities/add-activity {:type :dislike
+                                :target (str "stories/" story-k)
+                                :by (str "users/" user-k)}))
+    (ok toggle-map)))
 
 (defn toggle-truth [story-k user-k]
-  (ok (db/toggle-truth! story-k user-k)))
+  (let [toggle-map (db/toggle-truth! story-k user-k)]
+    (when (:truth toggle-map)
+      (activities/add-activity {:type :truth
+                                :target (str "stories/" story-k)
+                                :by (str "users/" user-k)}))
+    (ok toggle-map)))
 
 (defn toggle-lie [story-k user-k]
-  (ok (db/toggle-lie! story-k user-k)))
-
-(defn unmark-truth [story-k user-k]
-  (ok (db/unmark-truth! story-k user-k)))
-
-(defn unmark-lie [story-k user-k]
-  (ok (db/unmark-lie! story-k user-k)))
+  (let [toggle-map (db/toggle-lie! story-k user-k)]
+    (when (:lie toggle-map)
+      (activities/add-activity {:type :lie
+                                :target (str "stories/" story-k)
+                                :by (str "users/" user-k)}))
+    (ok toggle-map)))
 
 (defn- encode-img [file]
   (->> (bs/to-byte-array file)
@@ -90,4 +100,8 @@
                                 :description description
                                 :images imgs})]
     (db/set-owner (:_key story) user)
+    (activities/add-activity {:type :new-story
+                              :by (str "users/" user)
+                              :location (:location story)
+                              :target (:_id story)})
     (ok story)))

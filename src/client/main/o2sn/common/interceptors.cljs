@@ -6,9 +6,10 @@
    :id :server
    :after (fn [context]
             (if (contains? (:effects context) :http-xhrio)
-              (let [s (get-in context [:coeffects :db :server])]
+              (let [s (get-in context [:coeffects :db :server])
+                    url (str "http://" (:host s) ":" (:port s))]
                 (update-in context [:effects :http-xhrio :uri]
-                           #(str s %)))
+                           #(str url %)))
               context))))
 
 (def auth

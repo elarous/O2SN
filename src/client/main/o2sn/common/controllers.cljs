@@ -35,3 +35,9 @@
                            (when (= handler :list-channels)
                              true))
                  :start [:channels/load]})
+
+(reg-controller :notifications
+                {:params (fn [{:keys [handler route-params]}]
+                           (when (= handler :notifications)
+                             true))
+                 :start [:notifs/get-notifs]})

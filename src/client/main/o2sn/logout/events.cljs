@@ -7,4 +7,5 @@
 (reg-event-fx
  :logout/logout
  (fn [_ _]
-   {:dispatch [:reset]}))
+   {:dispatch-n [[:reset]
+                 [:notifs/disconnect-ws]]}))

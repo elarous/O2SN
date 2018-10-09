@@ -1,0 +1,11 @@
+
+#my-channels-page {
+    display: flex;
+    flex-flow : row wrap;
+    justify-content: space-around;
+
+    .channel-card {
+        background-color: $grey-50;
+    }
+}
+

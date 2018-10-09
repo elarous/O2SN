@@ -13,8 +13,9 @@
      [:> ui/Icon {:name icon}] label]))
 
 (defn side-bar [panel]
-  [:> ui/Sidebar.Pushable {:as (r/as-element ui/Segment)}
+  [:> ui/Sidebar.Pushable {:as "div"}
    [:> ui/Sidebar {:as (r/as-element ui/Menu)
+                   :id "sidebar"
                    :animation "push"
                    :width "thin"
                    :visible @(rf/subscribe [:sidebar/visible?])
@@ -29,5 +30,4 @@
     [menu-item {:page :friends :label "Friends" :icon "users"}]
     [menu-item {:page :settings :label "Settings" :icon "settings"}]]
    [:> ui/Sidebar.Pusher
-    [:> ui/Segment {:basic true}
-     panel]]])
+    [:div.page-contents panel]]])

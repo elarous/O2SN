@@ -1,0 +1,1 @@
+ag -l | entr -s 'sassc screen.scss ../css/screen.css'

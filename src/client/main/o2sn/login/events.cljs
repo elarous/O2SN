@@ -112,7 +112,8 @@
               (assoc-in [:user :checking-auth?] false))
       :navigate-to [:home]
       :dispatch-n [[:notifs/connect-ws]
-                   [:notifs/get-unreads]]})))
+                   [:notifs/get-unreads]
+                   [:channels/load]]})))
 
 (reg-event-db
  :login/fail

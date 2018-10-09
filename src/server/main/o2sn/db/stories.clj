@@ -79,21 +79,22 @@
         first)))
 
 ;; TODO : this query retrieves a lot of unnecessary fields, only relevant fields should be selected
-(defn by-channel [chan-key]
-  (let [id (str "channels/" chan-key)
-        q-str "for c in channels
+(defn by-channel [{:keys [channel sort-by order offset count]}]
+  (let [id (str "channels/" channel)
+        default-cover-img "2589143"
+        unformated-str
+"for c in channels
     filter c._id == @id
     for l in 0..5 outbound c.location contains
         for s in stories
             filter s.location == l._id
             for cat in categories
                 filter s.category == cat._id
-                let truth = (for t in  1..1 inbound s._id truth
+                let truth_count  = count(for t in  1..1 inbound s._id truth
                             return t)
-                let lie = (for li in 1..1 inbound s._id lie
+
+                let lie_count = count(for li in 1..1 inbound s._id lie
                             return li)
-                let owner = first(for o in 1..1 inbound s._id own
-                            return o)
 
                 let likes = (for lik in 1..1 inbound s._id liking
                             return lik)
@@ -101,15 +102,29 @@
                 let dislikes = (for dis in 1..1 inbound s._id disliking
                                return dis)
 
-                return distinct merge(s,
-                    {location : l,
-                        category : cat,
-                        truth : truth,
-                        lie : lie,
-                        owner : owner,
-                        likes : likes,
-                        dislikes : dislikes})"]
-    (db/query! q-str {:id id})))
+                let cover_img = document(concat(\"images/\", first(s.images) or \"%s\"))
+
+                let result = merge(s,
+                        {location : l,
+                            category : cat,
+                            likes : likes,
+                            dislikes : dislikes,
+                            truth_count,
+                            lie_count,
+                            cover_img})
+                sort result[@sort_by] %s
+                limit @offset, @count
+                return result"
+        q-str (format unformated-str default-cover-img (name order))]
+    (db/query! q-str {:id id
+                      :offset offset
+                      :count count
+                      :sort_by (case sort-by
+                                 :truth "truth_count"
+                                 :lie "lie_count"
+                                 :title "title"
+                                 :date "date"
+                                 "date")})))
 
 (defn liked-by? [story-k user-k]
   (let [story-id (str "stories/" story-k)

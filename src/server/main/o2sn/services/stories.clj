@@ -21,8 +21,8 @@
 (defn by-user [user-key]
   (ok (db/by-user user-key)))
 
-(defn by-channel [chan-key]
-  (ok (db/by-channel chan-key)))
+(defn by-channel [m]
+  (ok (db/by-channel m)))
 
 (defn by-key [story-key]
   (ok (db/by-key story-key)))

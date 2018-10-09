@@ -1,0 +1,210 @@
+@import 'variables';
+@import 'mixins';
+@import 'sidebar';
+@import 'topbar';
+@import 'home';
+@import 'channels';
+@import 'profile';
+
+
+
+/* colors */
+.teal-50 {
+    background-color : #E0F2F1;
+}
+
+.teal-100 {
+    background-color : #B2DFDB;
+}
+
+.teal-900 {
+    background-color : #004D40;
+}
+
+
+#normal-page {
+    position: static;
+    top: 0px;
+    left: 0px;
+    height: 100vh;
+    width: 100vw;
+    padding-top: 50px;
+    @media (max-width: $bp-tablet){
+        padding-top: 50px;
+    }
+    @media (max-width: $bp-mobile){
+        padding-top: 65px;
+    }
+}
+
+#add-popup {
+    background-color: $color-50;
+    border: 1px solid $color-100;
+    padding: 10px 5px 5px 5px;
+    @include shadow();
+    &::before {
+        background-color: $color-50;
+        padding: 0px;
+    }
+
+    .menu {
+        border: none;
+        border-right: 1px solid $color-200;
+
+    }
+
+    .item {
+        background-color : $color-100;
+        color: $color-900;
+        border: 1px solid $color-200;
+        border-right: none;
+
+        &:hover{
+            background-color: $color-200;
+            color: $color-800;
+        }
+    }
+}
+
+#notifs-popup {
+    background-color: $color-50;
+    border: 1px solid $color-100;
+    padding: 10px 5px 5px 5px;
+    @include shadow();
+    &::before {
+        background-color: $color-50;
+        padding: 0px;
+    }
+
+    #links {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-bottom: 5px;
+        a {
+            color : $color-800;
+        }
+    }
+
+    .notifs {
+        border-left: 1px solid $color-200;
+        border-right: 1px solid $color-200;
+        border-bottom: 1px solid $color-200;
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-width: 180px;
+        max-height: 300px;
+
+        .notif-segment {
+            display: grid;
+            grid-template-columns: 25% 75%;
+            padding: 5px;
+            background-color: $color-100;
+            border-top: 1px solid $color-200;
+            padding: 0px;
+
+            &:hover{
+                background-color: $color-200;
+            }
+
+            .notif-img {
+                padding: 8px;
+                img{
+                    margin: auto;
+                    width: 100%;
+                }
+            }
+
+            .notif-body {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: flex-start;
+                .notif-username {
+                    font-weight: bold;
+                    color: $color-900;
+                }
+
+                .notif-action {
+                    color: $color-700;
+                }
+
+                .notif-target {
+                    color: $color-900;
+                    font-style: italic;
+                    font-weight: bold;
+                }
+
+            }
+        }
+    }
+}
+
+/* the page contents */
+.page-contents {
+    padding: 10px;
+}
+
+/* page */
+.page-header {
+    text-align: center;
+    color: $color-700;
+}
+
+
+// /* so that the form container take the full height */
+// /* body, */
+// body > #app,
+// body > #app > div,
+// body > #app > div > div,
+// body > #app > div > div > div.login-form,
+// body > #app > div > div > div.signup-form {
+//     height: 100%;
+// }
+
+// .h100 {
+//     height : 100%;
+// }
+
+.login-msg {
+    display: flex;
+    flex-direction : column;
+    justify-content : space-around ;
+    align-items: center;
+    align-content : center;
+    height: 100%;
+    padding-left: 30%;
+    padding-right: 30%;
+}
+
+.top-menu-avatar {
+    min-height: 42px;
+    min-width : 42px;
+}
+.new-story-panel {
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
+.new-story-images {
+    display: flex;
+    flex-flow : row wrap;
+    justify-content: space-around;
+}
+
+.new-story-images img{
+    height: 140px;
+    width : 140px;
+    margin-left: 5px;
+    margin-bottom : 5px;
+}
+
+#new-story-add-img-input {
+    display : none;
+}
+
+/* the card styles */
+
+
+
+

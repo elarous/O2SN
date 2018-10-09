@@ -60,47 +60,51 @@
      [:> ui/Grid.Column {:width 2}]]]])
 
 (defn list-channels-page []
-  [:div#my-channels-tab
-   (let [chans @(rf/subscribe [:channels/all])]
-     (if (seq chans)
-       (doall
-        (for [chan chans
-              :let [color @(rf/subscribe [:channels/color (:type chan)])]]
-          ^{:key (:_key chan)}
-          [:div {:style {:margin-top "15px"}}
-           [:> ui/Confirm {:open
-                        @(rf/subscribe [:channels/confirm-visible? (:_key chan)])
-                        :on-confirm #(do (rf/dispatch [:channels/delete (:_key chan)])
-                                         (rf/dispatch [:channels/cancel-delete (:_key chan)]))
-                        :on-cancel #(rf/dispatch [:channels/cancel-delete (:_key chan)])}]
-           [:> ui/Segment {:color color
-                        :attached "top"
-                        :style {:min-width "250px"}}
-            [:> ui/Header {:as "h4"
-                        :color color}
-             [:> ui/Icon {:name "tv"}]
-             (:name chan)]
-            [:> ui/Divider]
-            [:> ui/Grid
-             [:> ui/Grid.Column {:width 8
-                              :text-align "center"}
-              [:> ui/Popup {:trigger (r/as-element
-                                   [:> ui/Label {:color color}
-                                    (:type chan)])
-                         :content "Location Type"}]]
-             [:> ui/Grid.Column {:width 8
-                              :text-align "center"}
-              [:> ui/Popup {:trigger (r/as-element [:> ui/Label (:subscribers chan)])
-                         :content "Number of Subscribers"}]]]]
-           [:> ui/Button {:attached "bottom"
-                       :color color
-                       :icon "trash"
-                       :size "mini"
-                       :content "Delete"
-                       :on-click
-                       #(rf/dispatch [:channels/confirm-delete (:_key chan)])}]]))
-       [:> ui/Segment
-        [:> ui/Container {:text-align "center"}
-         [:> ui/Header {:as "h2"
-                     :color "grey"
-                     :content "You Are Not Subscribed To Any Channel Yet !"}]]]))])
+  [:div
+   [:h1.page-header "Channels For Locations"]
+   [:> ui/Divider]
+   [:div#my-channels-page
+    (let [chans @(rf/subscribe [:channels/all])]
+      (if (seq chans)
+        (doall
+         (for [chan chans
+               :let [color @(rf/subscribe [:channels/color (:type chan)])]]
+           ^{:key (:_key chan)}
+           [:div {:style {:margin-top "15px"}}
+            [:> ui/Confirm {:open
+                            @(rf/subscribe [:channels/confirm-visible? (:_key chan)])
+                            :on-confirm #(do (rf/dispatch [:channels/delete (:_key chan)])
+                                             (rf/dispatch [:channels/cancel-delete (:_key chan)]))
+                            :on-cancel #(rf/dispatch [:channels/cancel-delete (:_key chan)])}]
+            [:> ui/Segment {:color color
+                            :attached "top"
+                            :className "channel-card"
+                            :style {:min-width "250px"}}
+             [:> ui/Header {:as "h4"
+                            :color color}
+              [:> ui/Icon {:name "tv"}]
+              (:name chan)]
+             [:> ui/Divider]
+             [:> ui/Grid
+              [:> ui/Grid.Column {:width 8
+                                  :text-align "center"}
+               [:> ui/Popup {:trigger (r/as-element
+                                       [:> ui/Label {:color color}
+                                        (:type chan)])
+                             :content "Location Type"}]]
+              [:> ui/Grid.Column {:width 8
+                                  :text-align "center"}
+               [:> ui/Popup {:trigger (r/as-element [:> ui/Label (:subscribers chan)])
+                             :content "Number of Subscribers"}]]]]
+            [:> ui/Button {:attached "bottom"
+                           :color color
+                           :icon "trash"
+                           :size "mini"
+                           :content "Delete"
+                           :on-click
+                           #(rf/dispatch [:channels/confirm-delete (:_key chan)])}]]))
+        [:> ui/Segment
+         [:> ui/Container {:text-align "center"}
+          [:> ui/Header {:as "h2"
+                         :color "grey"
+                         :content "You Are Not Subscribed To Any Channel Yet !"}]]]))]])

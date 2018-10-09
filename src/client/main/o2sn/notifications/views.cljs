@@ -5,92 +5,42 @@
             [bidi.bidi :refer [path-for]]
             [o2sn.common.routes :refer [routes]]))
 
-(def green "#E0F2F1")
-(def green-f "#1B5E20")
-(def red "#FFEBEE")
-(def red-f "#B71C1C")
-
-(defn get-color [t]
-  (let [type (keyword t)]
-    (cond (contains? #{:new-story :like :truth} type)
-          [green green-f]
-          (contains? #{:dislike :lie} type)
-          [red red-f]
-          :else "")))
-
-(defn make-msg [msg]
-  (let [user-k (get-in msg [:by :_key])
-        username [:a {:href (path-for routes :profile :user user-k)}
-                  (str "@" (get-in msg [:by :username]))]
-        target (:target msg)
-        target-url (if target
-                     (path-for routes :view-story :story
-                               (get-in msg [:target :_key]))
-                     "#")
-        story-title [:a {:href target-url
-                         :on-click #(rf/dispatch [:notifs/notif-click msg])
-                         :style {:color (second (get-color (:type msg)))
-                                 :font-weight "bold"}}
-                     (get-in msg [:target :title])]]
-    (case (keyword (:type msg))
-      :like [:span username " Liked Story " story-title]
-      :dislike [:span username " Disliked Story " story-title]
-      :truth [:span username " Marked As Truth Story " story-title]
-      :lie [:span username " Marked As Lie Story " story-title]
-      :new-story [:span "New Story by " username " : "  story-title]
-      "A New Notification")))
-
-(defn make-msg-toast [msg]
-  (case (keyword (:type msg))
-    :like "Someone Liked A Relevant Story"
-    :dislike "Someone Disliked A Relevant Story"
-    :truth "Someone Marked As Truth A Relevant Story"
-    :lie "Someone Marked As Lie A Relevant Story"
-    :new-story "Someone Added A New Story"
-    "A New Notification"))
+(def actions-str
+  {:like " Liked Story "
+   :dislike " Disliked Story "
+   :truth " Marked As Truth "
+   :lie " Marked As Lie "
+   :new-story " Created A New Story "})
 
 (defn notif-segment [msg]
-  [:> ui/Segment {:compact false
-                  :style {:padding "3px"
-                          :background-color (first (get-color (:type msg)))
-                          :cursor "pointer"}}
-   [:> ui/Grid
-    [:> ui/Grid.Column {:width 4
-                        :vertical-align "middle"
-                        :text-align "center"}
-     [:> ui/Image {:src "img/user.svg"
-                   :avatar true
-                   :style {:min-height "50px"
-                           :min-width "50px"}}]]
-    [:> ui/Grid.Column {:width 12
-                        :text-align "left"
-                        :vertical-align "middle"}
-     [:span (make-msg msg)]]]])
+  (let [user-k (get-in msg [:by :_key])
+        target-url (if (:target msg)
+                     (path-for routes :view-story :story
+                               (get-in msg [:target :_key])) "#")]
+    [:div.notif-segment
+     [:div.notif-img
+      [:img {:src "img/user.svg"}]]
+     [:div.notif-body
+      [:div
+       [:a.notif-username {:href (path-for routes :profile :user user-k)}
+        (str "@" (get-in msg [:by :username]))]
+       [:span.notif-action
+        (get actions-str (keyword (:type msg)))]]
+      [:a.notif-target {:href target-url
+                        :on-click #(rf/dispatch [:notifs/notif-click msg])}
+       (get-in msg [:target :title])]]]))
 
 (defn menu-notifications []
   (let [notifs @(rf/subscribe [:notifs/unreads])]
     (if (pos? (count notifs))
       [:div
-       [:> ui/Container {:text-align "center"
-                         :style {:margin-bottom "3px"}}
-        [:> ui/Button {:as "div"
-                       :label-position "right"
-                       :size "mini"}
-         [:> ui/Button {:color "teal"
-                        :size "mini"
-                        :on-click #(rf/dispatch [:notifs/mark-read-all])}
-          [:> ui/Icon {:name "check"}]
-          "Mark All As Read"]
-         [:> ui/Label {:as "div"
-                       :basic true
-                       :color "teal"
-                       :pointing "left"}
-          (count notifs)]]]
-       [:div {:style {:overflow-y "auto"
-                      :overflow-x "hidden"
-                      :min-width "180px"
-                      :max-height "300px"
-                      :padding-right "6px"}}
+       [:div#links
+        [:a {:on-click #(rf/dispatch [:notifs/mark-read-all])
+             :style {:cursor "pointer"}}
+         "Mark All As Read"]
+        [:a {:href (path-for routes :notifications)}
+         "All Notifications"]]
+       [:div.notifs
         (for [n notifs]
           ^{:key (:_key n)}
           [notif-segment n])]]

@@ -25,8 +25,10 @@
 (reg-event-db
  :channels/loading-success
  (fn [db [chans]]
-   (assoc-in db [:channels :all]
-             (map #(update % :type keyword) chans))))
+   (let [channels (map #(update % :type keyword) chans)]
+     (-> db
+         (assoc-in [:channels :all] channels)
+         (assoc-in [:home :channel] (-> channels first :_key))))))
 
 (reg-event-db
  :channels/loading-failure

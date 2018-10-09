@@ -69,6 +69,14 @@
    :categories {"Event" "orange"
                 "Accident" "blue"
                 "Natural Disaster" "green"}
+   :home {:channel ""
+          :sort-by :date
+          :order :desc
+          :offset 0
+          :count 4
+          :can-load? false
+          :first-loading? false
+          :more-loading? false}
    :stories {:loading?  false}
    :story {:current nil
            :visible false

@@ -1,11 +1,7 @@
 (ns o2sn.common.controllers
   (:require [kee-frame.core :refer [reg-controller]]))
 
-(reg-controller :home
-                {:params (fn [{handler :handler}]
-                           (when (= handler :home)
-                             true))
-                 :start [:set-home-contents]})
+
 
 (reg-controller :login
                 {:params (fn [{handler :handler}]

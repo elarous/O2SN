@@ -1,0 +1,22 @@
+#sidebar {
+    background-color: $color-500;
+    color: $color-200;
+    @include shadow();
+
+    @media (max-width: $bp-tablet){
+        width: 130px;
+    }
+    @media (max-width: $bp-mobile){
+        width: 70px;
+    }
+    .item {
+        @media (max-width: $bp-tablet){
+            font-size: 1rem;
+        }
+        @media (max-width: $bp-mobile){
+            font-size: 0.9rem;
+            padding: 10px 0px;
+        }
+    }
+}
+

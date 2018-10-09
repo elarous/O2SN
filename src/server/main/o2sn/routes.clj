@@ -156,11 +156,19 @@
       :summary "get all the stories for the given user"
       (stories/by-user user-key))
 
-    (GET "/channel/:chan-key" []
+    (GET "/channel/:chan-k/:sort-by/:order/:offset/:count" []
       :auth-rules authenticated?
-      :path-params [chan-key :- String]
+      :path-params [chan-k :- String
+                    sort-by :- String
+                    order :- String
+                    offset :- s/Int
+                    count :- s/Int]
       :summary "get all the stories for the given channel"
-      (stories/by-channel chan-key))
+      (stories/by-channel {:channel chan-k
+                           :sort-by (keyword sort-by)
+                           :order (keyword order)
+                           :offset offset
+                           :count count}))
 
     (GET "/story/:story-key/get" []
       :auth-rules authenticated?

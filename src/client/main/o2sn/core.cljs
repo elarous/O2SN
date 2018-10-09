@@ -2,6 +2,7 @@
   (:require [reagent.core :as  r]
             [re-frame.core :as rf]
             [kee-frame.core :as k]
+            ["semantic-ui-react" :as ui]
             [o2sn.validation.validation]
             [o2sn.common.routes :refer [routes]]
             [o2sn.common.db :refer [default-db]]
@@ -50,14 +51,37 @@
 
 
 (defn normal-page [page-contents]
-  [:div
+  [:div#normal-page
    [main-menu]
    [side-bar page-contents]
    [notifications-alert]])
 
 (defn full-page [page-contents]
-  [:div
+  [:div#full-page
    page-contents])
+
+
+(defn msgs-page []
+  [:div {:style {:height "100vh"
+                 :width "100vw"
+                 :display "flex"
+                 :justify-content "center"
+                 :align-items "center"}}
+   #_[card {:image "/img/crash.jpg"
+          :title "The Title Of The Story"
+          :date "22/10/2017 12:34"
+          :distance 5
+          :description "This is just a normal story and it's not special at all as you see"
+          :category "Event"
+          :story-k "2589162"
+          :likes (repeat 20
+                         {:_key "1"
+                          :username "karim"
+                          :avatar "/img/user.svg"})
+          :dislikes (repeat 20
+                         {:_key "3"
+                          :username "karim"
+                          :avatar "/img/user.svg"})}]])
 
 (defn content []
   [k/switch-route (fn [route]
@@ -72,7 +96,7 @@
    :add-channel [normal-page [add-channel-page]]
    :profile [normal-page [profile-page]]
    :my-profile [normal-page [profile-page]]
-   :messages [normal-page [:div "my messages"]]
+   :messages [normal-page [msgs-page]]
    :friends [normal-page [:div "my friends"]]
    :settings [normal-page [:div "my settings"]]
    :operation [normal-page [operation-page]]

@@ -34,15 +34,15 @@ Users can like or dislike a story, which doesn't effect the story's rating nor t
 ## Screenshots
 ### home page
 #### Default home page
-![default home page]("screenshots/1.png")
+![default home page](screenshots/1.png)
 #### Selecting a channel
-![selecting a channel]("screenshots/2.png")
+![selecting a channel](screenshots/2.png)
 #### Loading Stories
-![loading stories]("screenshots/3.png")
+![loading stories](screenshots/3.png)
 #### Clicking a story card to reveal actions
-![clicking a story card to reveal actions]("screenshots/4.png")
+![clicking a story card to reveal actions](screenshots/4.png)
 #### View users who likes or dislikes the story
-![view users who likes or dislikes the story]("screenshots/5.png")
+![view users who likes or dislikes the story](screenshots/5.png)
 
 
 

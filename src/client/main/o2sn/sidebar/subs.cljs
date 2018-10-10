@@ -10,3 +10,8 @@
  :sidebar/active?
  (fn [db [_ page-k]]
    (= (get-in db [:kee-frame/route :handler]) page-k)))
+
+(reg-sub
+ :sidebar/loading?
+ (fn [db _]
+   (get-in db [:sidebar :loading?])))

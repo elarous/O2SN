@@ -105,8 +105,6 @@
  (fn [[story] _]
    (:dislikes story)))
 
-
-
 (reg-sub
  :home/likes-modal-visible?
  (fn [db _]

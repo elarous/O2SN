@@ -57,7 +57,8 @@
                  :signed-up? false}
    :topbar {:add-menu {:open? false}
             :notifications {:open? false}}
-   :sidebar {:visible? false}
+   :sidebar {:visible? false
+             :loading? false}
    :search {:value ""
             :content {:stories
                       {:name "stories"

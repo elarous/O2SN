@@ -4,8 +4,7 @@
             ["semantic-ui-react" :as ui]
             [cljs-time.core :as t]
             [cljs-time.format :as f]
-            [clojure.string :as s]
-            #_["/o2sn/client/js/playing" :as p]))
+            [clojure.string :as s]))
 
 (defn- format-dt [dt-str]
   (when dt-str
@@ -293,33 +292,7 @@
      [:div#sorting
       [sorting-selection]]
      [:div#ordering
-      [order-selection]]
-     #_[:select {:on-change #(rf/dispatch [:home/set-sort-by
-                                         (-> % .-target .-value)])
-               :value @(rf/subscribe [:home/sort-by])}
-      [:option {:value "date"} "Date"]
-      [:option {:value "title"} "Title"]
-      [:option {:value "truth"} "Truth Count"]
-      [:option {:value "lie"} "Lie Count"]
-      [:option {:value "distance"} "Distance"]]]
-    
-    #_[:div.order-segment
-       [:div.desc
-        [:input {:type "radio"
-                 :value "desc"
-                 :name "order"
-                 :checked (= @(rf/subscribe [:home/order]) "desc")
-                 :on-change #(rf/dispatch [:home/set-order
-                                           (-> % .-target .-value)])}]
-        [:label {:for "radio-desc"} "DESC"]]
-       [:div.asc
-        [:input {:type "radio"
-                 :value "asc"
-                 :name "order"
-                 :checked (= @(rf/subscribe [:home/order]) "asc")
-                 :on-change #(rf/dispatch [:home/set-order
-                                           (-> % .-target .-value)])}]
-        [:label {:for "radio-asc"} "ASC"]]]]])
+      [order-selection]]]]])
 
 (defn home-page []
   [:div#home

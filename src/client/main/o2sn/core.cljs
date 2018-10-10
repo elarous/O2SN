@@ -66,22 +66,7 @@
                  :width "100vw"
                  :display "flex"
                  :justify-content "center"
-                 :align-items "center"}}
-   #_[card {:image "/img/crash.jpg"
-          :title "The Title Of The Story"
-          :date "22/10/2017 12:34"
-          :distance 5
-          :description "This is just a normal story and it's not special at all as you see"
-          :category "Event"
-          :story-k "2589162"
-          :likes (repeat 20
-                         {:_key "1"
-                          :username "karim"
-                          :avatar "/img/user.svg"})
-          :dislikes (repeat 20
-                         {:_key "3"
-                          :username "karim"
-                          :avatar "/img/user.svg"})}]])
+                 :align-items "center"}}])
 
 (defn content []
   [k/switch-route (fn [route]

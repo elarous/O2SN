@@ -58,7 +58,9 @@
    :topbar {:add-menu {:open? false}
             :notifications {:open? false}}
    :sidebar {:visible? false
-             :loading? false}
+             :overlay {:hovered-page :home
+                       :loading? false
+                       :visible? true}}
    :search {:value ""
             :content {:stories
                       {:name "stories"

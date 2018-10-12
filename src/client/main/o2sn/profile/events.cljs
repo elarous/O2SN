@@ -33,12 +33,14 @@
                  :on-failure [:profile/load-profile-failure]}
     :db (assoc-in db [:profile :loading? :infos] true)}))
 
-(reg-event-db
+(reg-event-fx
  :profile/load-profile-success
- (fn [db [resp]]
-   (-> db
-       (assoc-in [:profile :infos] resp)
-       (assoc-in [:profile :loading? :infos] false))))
+ (fn [{db :db} [resp]]
+   {:db (-> db
+            (assoc-in [:profile :infos] resp)
+            (assoc-in [:profile :loading? :infos] false))
+    :dispatch-later [{:ms 200
+                      :dispatch [:sidebar/stop-loading]}]}))
 
 (reg-event-db
  :profile/load-profile-failure

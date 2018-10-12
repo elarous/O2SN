@@ -2,6 +2,11 @@
   (:require [kee-frame.core :refer [reg-controller]]))
 
 
+(reg-controller :home
+                {:params (fn [{handler :handler}]
+                           (when (= handler :home)
+                             true))
+                 :start [:home/load]})
 
 (reg-controller :login
                 {:params (fn [{handler :handler}]

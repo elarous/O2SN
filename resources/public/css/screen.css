@@ -83,25 +83,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: absolute;
+  position: fixed;
   top: 0px;
   left: 0px;
   height: 100%;
   width: 100%; }
-  #sidebar-overlay .icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    color: #4A148C; }
-  #sidebar-overlay .label {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: #6A1B9A;
-    font-family: "Comfortaa"; }
-  #sidebar-overlay .desc {
-    font-size: 1.4rem;
-    color: #7B1FA2;
-    font-famly: "KoHo";
-    text-align: center; }
 
 @keyframes rotation {
   0% {
@@ -109,24 +95,33 @@
   100% {
     transform: rotate(360deg); } }
 
-#sidebar-loading {
-  background-color: #F3E5F5;
+#overlay-loading i {
+  font-size: 5rem;
+  color: #6A1B9A;
+  animation-name: rotation;
+  animation-duration: 2s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite; }
+
+#overlay-infos {
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
-  height: 100%;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  height: 100%;
-  width: 100%; }
-  #sidebar-loading i {
-    font-size: 5rem;
+  align-items: center; }
+  #overlay-infos .icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #4A148C; }
+  #overlay-infos .label {
+    font-size: 2rem;
+    margin-bottom: 1rem;
     color: #6A1B9A;
-    animation-name: rotation;
-    animation-duration: 2s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite; }
+    font-family: "Comfortaa"; }
+  #overlay-infos .desc {
+    font-size: 1.4rem;
+    color: #7B1FA2;
+    font-famly: "KoHo";
+    text-align: center; }
 
 #top-menu {
   position: fixed;

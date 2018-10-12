@@ -96,11 +96,34 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: absolute;
+    position: fixed;
     top: 0px;
     left: 0px;
     height: 100%;
     width: 100%;
+   }
+
+@keyframes rotation {
+    0% {transform : rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
+
+#overlay-loading {
+    i {
+        font-size: 5rem;
+        color: $color-800;
+        animation-name: rotation;
+        animation-duration: 2s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
+}
+
+#overlay-infos {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     .icon {
         font-size: 4rem;
         margin-bottom: 1rem;
@@ -117,32 +140,5 @@
         color: $color-700;
         font-famly: $font-text;
         text-align: center;
-    }
-}
-
-@keyframes rotation {
-    0% {transform : rotate(0deg);}
-    100% {transform: rotate(360deg);}
-}
-
-#sidebar-loading {
-    background-color: $color-50;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    height: 100%;
-    width: 100%;
-
-    i {
-        font-size: 5rem;
-        color: $color-800;
-        animation-name: rotation;
-        animation-duration: 2s;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
     }
 }

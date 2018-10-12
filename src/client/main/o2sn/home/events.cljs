@@ -4,6 +4,12 @@
             [ajax.core :as ajax]
             [o2sn.common.interceptors :refer [server auth]]))
 
+(reg-event-fx
+ :home/load
+ (fn [{db :db} _]
+   {:dispatch-later [{:ms 200
+                      :dispatch [:sidebar/stop-loading]}]}))
+
 (reg-event-db
  :home/set-channel
  (fn [db [k]]

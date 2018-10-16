@@ -959,11 +959,18 @@
       #profile-page .infos {
         grid-template: auto auto auto / auto; } }
     #profile-page .infos .img-container {
-      padding: 20px; }
-      @media (max-width: 480px) {
-        #profile-page .infos .img-container img {
-          max-height: 180px;
-          max-width: 100%; } }
+      padding: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+      #profile-page .infos .img-container img {
+        width: 100%;
+        margin: auto;
+        max-height: 200px; }
+        @media (max-width: 480px) {
+          #profile-page .infos .img-container img {
+            max-height: 180px;
+            max-width: 100%; } }
     #profile-page .infos .names {
       display: flex;
       flex-direction: column;
@@ -975,27 +982,30 @@
       #profile-page .infos .names .fullname {
         margin: 10px;
         color: #F3E5F5;
-        font-size: 3rem; }
+        font-size: 3rem;
+        font-family: "Comfortaa";
+        text-align: center; }
         @media (max-width: 839px) {
           #profile-page .infos .names .fullname {
-            font-size: 2rem;
+            font-size: 1.6rem;
             margin: 5px; } }
       #profile-page .infos .names .username {
         margin: 10px;
         color: #E1BEE7;
         font-size: 2rem;
-        font-style: italic; }
+        font-family: "ABeeZee"; }
         @media (max-width: 839px) {
           #profile-page .infos .names .username {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin: 5px; } }
       #profile-page .infos .names .email {
         margin: 10px;
         color: #CE93D8;
-        font-size: 1.6rem; }
+        font-size: 1.6rem;
+        font-family: "KoHo"; }
         @media (max-width: 839px) {
           #profile-page .infos .names .email {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             margin: 5px; } }
     #profile-page .infos .basic-infos {
       display: flex;
@@ -1009,7 +1019,8 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center; }
+        align-items: center;
+        font-family: "ABeeZee"; }
         #profile-page .infos .basic-infos .age .number {
           font-size: 2rem;
           margin-bottom: 5px; }
@@ -1057,7 +1068,9 @@
     background-color: #E1BEE7; }
     #profile-page .stories h1 {
       color: #6A1B9A;
-      text-align: center; }
+      text-align: center;
+      font-family: "ABeeZee";
+      padding-top: 5px; }
     #profile-page .stories hr {
       border: none;
       border-top: 1px solid #CE93D8; }
@@ -1065,7 +1078,8 @@
       padding: 10px; }
       #profile-page .stories .buttons .button {
         background-color: #9C27B0;
-        color: #F3E5F5; }
+        color: #F3E5F5;
+        font-family: "ABeeZee"; }
         #profile-page .stories .buttons .button:hover {
           background-color: #8E24AA;
           color: #E1BEE7; }
@@ -1075,8 +1089,8 @@
       #profile-page .stories .table-container table {
         width: 100%;
         text-align: center;
-        /* border: 1px solid $color-400; */
-        border-collapse: collapse; }
+        border-collapse: collapse;
+        font-family: "KoHo"; }
         #profile-page .stories .table-container table th {
           font-size: 1.2rem;
           color: #4A148C; }
@@ -1107,7 +1121,8 @@
       color: #E1BEE7;
       text-align: center;
       margin-bottom: 0px;
-      font-size: 2rem; }
+      font-size: 1.8rem;
+      font-family: "ABeeZee"; }
       @media (max-width: 480px) {
         #profile-page .side-segment h1 {
           font-size: 1.5rem; } }
@@ -1133,7 +1148,8 @@
       margin-top: 1rem;
       display: flex;
       justify-content: space-around;
-      align-items: center; }
+      align-items: center;
+      font-family: "KoHo"; }
       #profile-page .credibility .stats .truths, #profile-page .credibility .stats .lies {
         background-color: #9C27B0;
         border: 3px solid #8E24AA;
@@ -1152,7 +1168,8 @@
         font-size: 2rem;
         color: #F3E5F5; }
   #profile-page .stats {
-    padding-bottom: 10px; }
+    padding-bottom: 10px;
+    font-family: "KoHo"; }
     #profile-page .stats .all-stats {
       display: grid;
       grid-template-columns: 50% 50%;
@@ -1180,7 +1197,8 @@
     #profile-page .activities .table-container table {
       background-color: #8E24AA;
       border-collapse: collapse;
-      width: 100%; }
+      width: 100%;
+      font-family: "KoHo"; }
       #profile-page .activities .table-container table th {
         font-size: 1.2rem;
         color: #CE93D8;

@@ -20,8 +20,14 @@
         grid-template-columns: 20% 40% 40%;
 
         .img-container {
-            padding: 20px;
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items : center;
             img {
+                width: 100%;
+                margin: auto;
+                max-height: 200px;
                 @media (max-width: $bp-mobile){
                     max-height: 180px;
                     max-width: 100%;
@@ -40,34 +46,37 @@
 
             .fullname {
                 @media (max-width: $bp-tablet){
-                    font-size: 2rem;
+                    font-size: 1.6rem;
                     margin: 5px;
                 }
                 margin: 10px;
                 color: $color-50;
                 font-size: 3rem;
+                font-family: $font-title1;
+                text-align: center;
             }
 
             .username {
                 @media (max-width: $bp-tablet){
-                    font-size: 1.5rem;
+                    font-size: 1.4rem;
                     margin: 5px;
 
                 }
                 margin: 10px;
                 color: $color-100;
                 font-size: 2rem;
-                font-style: italic;
+                font-family: $font-title2;
             }
 
             .email {
                 @media (max-width: $bp-tablet){
-                    font-size: 1.1rem;
+                    font-size: 1.2rem;
                     margin: 5px;
                 }
                 margin: 10px;
                 color: $color-200;
                 font-size: 1.6rem;
+                font-family: $font-text;
             }
         }
 
@@ -85,6 +94,7 @@
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
+                font-family: $font-title2;
                 .number {
                     @media (max-width: $bp-tablet){
                         font-size: 1.4rem;
@@ -148,6 +158,8 @@
         h1 {
             color: $color-800;
             text-align: center;
+            font-family: $font-title2;
+            padding-top: 5px;
         }
 
         hr {
@@ -161,6 +173,7 @@
             .button {
                 background-color: $color-500;
                 color: $color-50;
+                font-family: $font-title2;
                 &:hover{
                     background-color: $color-600;
                     color: $color-100;
@@ -174,8 +187,8 @@
             table {
                 width: 100%;
                 text-align: center;
-                /* border: 1px solid $color-400; */
                 border-collapse: collapse;
+                font-family: $font-text;
 
                 th {
                     font-size: 1.2rem;
@@ -222,7 +235,8 @@
             color: $color-100;
             text-align: center;
             margin-bottom: 0px;
-            font-size: 2rem;
+            font-size: 1.8rem;
+            font-family: $font-title2;
         }
         hr {
             border: none;
@@ -251,6 +265,7 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
+            font-family: $font-text;
 
             .truths, .lies {
                 background-color: $color-500;
@@ -276,6 +291,7 @@
     }
     .stats {
         padding-bottom: 10px;
+        font-family: $font-text;
         .all-stats {
             @media (max-width: $bp-mobile){
                 grid-template-columns: 100%;
@@ -313,6 +329,7 @@
                 background-color: $color-600;
                 border-collapse: collapse;
                 width: 100%;
+                font-family: $font-text;
                 th {
                     font-size: 1.2rem;
                     color: $color-200;
